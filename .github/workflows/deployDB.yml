@@ -85,8 +85,16 @@ jobs:
             psql -h ${{ env.RDS_ENDPOINT }} -U ${{ vars.DB_MASTER_USERNAME }} -d postgres -p 5432 -c "CREATE DATABASE featureDoc;" \
             && echo "Database 'featureDoc' created successfully." \
             || echo "Failed to create database 'featureDoc'.")
-
-
+            
+    - name: Run Flyway migrations
+      run: |
+        docker run --rm \
+          -v $(pwd)/flyway/sql/migrations:/flyway/sql \
+          flyway/flyway migrate \
+          -url="jdbc:sqlserver://${{ env.RDS_ENDPOINT }}:1433;databaseName=${{ vars.DB_NAME }};encrypt=true;trustServerCertificate=true" \
+          -user=${{ vars.DB_MASTER_USERNAME }} \
+          -password=${{ secrets.DB_MASTER_PASSWORD }}
+          
     - name: Debug Connection String
       run: |
         echo "Using connection string: jdbc:postgresql://${{ env.RDS_ENDPOINT }}:5432/${{ vars.DB_NAME }}?user=${{ vars.DB_MASTER_USERNAME }}&password=${{ secrets.DB_MASTER_PASSWORD }}"
