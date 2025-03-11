@@ -1,0 +1,121 @@
+name: AWS Infrastructure Setup
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-network-infrastructure:
+    runs-on: ubuntu-latest
+    outputs:
+      vpc-id: ${{ steps.set-outputs.outputs.VPC_ID }}
+      subnet-ids: ${{ steps.set-outputs.outputs.SUBNET_IDS }}
+      security-group-id: ${{ steps.set-outputs.outputs.SG_ID }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:  ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Check if VPC exists
+        id: check-vpc
+        run: |
+          VPC_ID=$(aws ec2 describe-vpcs --filters "Name=cidr,Values=10.0.0.0/16" --query 'Vpcs[0].VpcId' --output text)
+          if [[ "$VPC_ID" != "None" ]]; then
+            echo "VPC exists with ID: $VPC_ID"
+            echo "VPC_ID=$VPC_ID" >> $GITHUB_OUTPUT
+            echo "VPC_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "No existing VPC found. Proceeding with creation."
+            echo "VPC_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Skip further steps if VPC exists
+        if: env.VPC_EXISTS == 'true'
+        run: |
+          echo "VPC already exists, skipping setup steps."
+
+      - name: Create VPC
+        id: create-vpc
+        if: env.VPC_EXISTS == 'false'
+        run: |
+          VPC_ID=$(aws ec2 create-vpc --cidr-block 10.0.0.0/16 --query 'Vpc.VpcId' --output text)
+          aws ec2 modify-vpc-attribute --vpc-id $VPC_ID --enable-dns-hostnames
+          echo "VPC_ID=$VPC_ID" >> $GITHUB_OUTPUT
+          aws ec2 wait vpc-available --vpc-ids $VPC_ID
+
+      - name: Create Internet Gateway
+        id: create-igw
+        if: env.VPC_EXISTS == 'false'
+        run: |
+          IGW_ID=$(aws ec2 create-internet-gateway --query 'InternetGateway.InternetGatewayId' --output text)
+          aws ec2 attach-internet-gateway --vpc-id ${{ steps.create-vpc.outputs.VPC_ID }} --internet-gateway-id $IGW_ID
+          echo "IGW_ID=$IGW_ID" >> $GITHUB_OUTPUT
+
+      - name: Create Subnets
+        id: create-subnets
+        if: env.VPC_EXISTS == 'false'
+        run: |
+          SUBNET1_ID=$(aws ec2 create-subnet \
+            --vpc-id ${{ steps.create-vpc.outputs.VPC_ID }} \
+            --cidr-block 10.0.1.0/24 \
+            --availability-zone ${AWS_REGION}a \
+            --query 'Subnet.SubnetId' --output text)
+          
+          SUBNET2_ID=$(aws ec2 create-subnet \
+            --vpc-id ${{ steps.create-vpc.outputs.VPC_ID }} \
+            --cidr-block 10.0.2.0/24 \
+            --availability-zone ${AWS_REGION}b \
+            --query 'Subnet.SubnetId' --output text)
+          
+          echo "SUBNET1_ID=$SUBNET1_ID" >> $GITHUB_OUTPUT
+          echo "SUBNET2_ID=$SUBNET2_ID" >> $GITHUB_OUTPUT
+          aws ec2 wait subnet-available --subnet-ids $SUBNET1_ID $SUBNET2_ID
+
+      - name: Create Route Table
+        id: create-route-table
+        if: env.VPC_EXISTS == 'false'
+        run: |
+          ROUTE_TABLE_ID=$(aws ec2 create-route-table --vpc-id ${{ steps.create-vpc.outputs.VPC_ID }} --query 'RouteTable.RouteTableId' --output text)
+          
+          # Use subnet IDs from previous step
+          SUBNET1_ID=${{ steps.create-subnets.outputs.SUBNET1_ID }}
+          SUBNET2_ID=${{ steps.create-subnets.outputs.SUBNET2_ID }}
+          
+          aws ec2 create-route --route-table-id $ROUTE_TABLE_ID --destination-cidr-block 0.0.0.0/0 --gateway-id ${{ steps.create-igw.outputs.IGW_ID }}
+          aws ec2 associate-route-table --route-table-id $ROUTE_TABLE_ID --subnet-id $SUBNET1_ID
+          aws ec2 associate-route-table --route-table-id $ROUTE_TABLE_ID --subnet-id $SUBNET2_ID
+
+      - name: Create Security Group
+        id: create-sg
+        if: env.VPC_EXISTS == 'false'
+        run: |
+          SG_ID=$(aws ec2 create-security-group \
+            --group-name FeatureDoc-Postgres-SG \
+            --description "Security group for PostgreSQL" \
+            --vpc-id ${{ steps.create-vpc.outputs.VPC_ID }} \
+            --query 'GroupId' --output text)
+          
+          # Wait for security group to be created
+          aws ec2 wait security-group-exists --group-ids $SG_ID
+          
+          # Allow PostgreSQL access
+          aws ec2 authorize-security-group-ingress \
+            --group-id $SG_ID \
+            --protocol tcp \
+            --port 5432 \
+            --cidr 0.0.0.0/0
+          
+          echo "SG_ID=$SG_ID" >> $GITHUB_OUTPUT
+
+      - name: Set Outputs
+        id: set-outputs
+        run: |
+          echo "VPC_ID=${{ steps.create-vpc.outputs.VPC_ID }}" >> $GITHUB_OUTPUT
+          echo "SUBNET_IDS=${{ steps.create-subnets.outputs.SUBNET_IDS }}" >> $GITHUB_OUTPUT
+          echo "SG_ID=${{ steps.create-sg.outputs.SG_ID }}" >> $GITHUB_OUTPUT
