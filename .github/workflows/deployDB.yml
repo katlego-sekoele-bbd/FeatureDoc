@@ -1,0 +1,92 @@
+name: Deploy DB
+on:
+  workflow_run:
+    workflows: ["AWS Infrastructure Setup"]
+    types:
+      - completed
+jobs:
+   deploy-db:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token:  ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ vars.AWS_REGION }}
+        
+    - name: Create DBSubnet Group if not exists
+      id: db-subnet-group
+      run: |
+        # Check if the DBSubnetGroup already exists
+        EXISTING_SUBNET_GROUP=$(aws rds describe-db-subnet-groups --db-subnet-group-name featuredoc-test-subnet --query 'DBSubnetGroups[0].DBSubnetGroupName' --output text)
+        
+        if [[ "$EXISTING_SUBNET_GROUP" == "featuredoc-test-subnet" ]]; then
+          echo "DB Subnet Group 'featuredoc-test-subnet' already exists. Skipping creation."
+        else
+          echo "Creating DB Subnet Group 'featuredoc-test-subnet'."
+          aws rds create-db-subnet-group \
+            --db-subnet-group-name featuredoc-test-subnet \
+            --db-subnet-group-description "Subnet group for featuredoc" \
+            --subnet-ids subnet-0e6b20217d3f533c0 subnet-0162941dbeab9472e
+        fi
+          
+    - name: Check if RDS instance exists
+      id: check-db
+      run: |
+        if aws rds describe-db-instances --db-instance-identifier ${{ vars.DB_IDENTIFIER }} > /dev/null 2>&1; then
+          echo "DB_EXISTS=true" >> $GITHUB_ENV
+        else
+          echo "DB_EXISTS=false" >> $GITHUB_ENV
+        fi
+
+    - name: Create RDS PostgreSQL instance if not exists
+      if: env.DB_EXISTS == 'false'
+      run: |
+        aws rds create-db-instance \
+          --db-instance-identifier ${{ vars.DB_IDENTIFIER }} \
+          --db-instance-class ${{ vars.DB_INSTANCE_CLASS }} \
+          --engine postgres \
+          --allocated-storage ${{ vars.DB_STORAGE }} \
+          --master-username ${{ vars.DB_MASTER_USERNAME }} \
+          --master-user-password ${{ secrets.DB_MASTER_PASSWORD }} \
+          --backup-retention-period 7 \
+          --no-multi-az \
+          --db-subnet-group-name featuredoc-test-subnet \
+          --publicly-accessible \
+          --vpc-security-group-ids sg-01e3cae7464d21f79
+    
+    - name: Wait for RDS to be available
+      if: env.DB_EXISTS == 'false'
+      run: |
+        echo "Waiting for RDS instance to be available..."
+        aws rds wait db-instance-available --db-instance-identifier ${{ vars.DB_IDENTIFIER }}
+    
+    - name: Get RDS Endpoint
+      run: |
+        ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier ${{ vars.DB_IDENTIFIER }} --query 'DBInstances[0].Endpoint.Address' --output text)
+        echo "RDS_ENDPOINT=$ENDPOINT" >> $GITHUB_ENV
+    
+    - name: Create Initial Database
+      run: |
+        docker run --rm \
+        -e PGPASSWORD=${{ secrets.DB_MASTER_PASSWORD }} \
+        postgres:alpine \
+        psql -h ${{ env.RDS_ENDPOINT }} -U ${{ vars.DB_MASTER_USERNAME }} -d postgres -p 5432 -c "SELECT 1 FROM pg_database WHERE datname = 'featureDoc' LIMIT 1;" \
+        && echo "Database exists, skipping creation." \
+        || (echo "Database does not exist, creating it..." && \
+            docker run --rm \
+            -e PGPASSWORD=${{ secrets.DB_MASTER_PASSWORD }} \
+            postgres:alpine \
+            psql -h ${{ env.RDS_ENDPOINT }} -U ${{ vars.DB_MASTER_USERNAME }} -d postgres -p 5432 -c "CREATE DATABASE featureDoc;" \
+            && echo "Database 'featureDoc' created successfully." \
+            || echo "Failed to create database 'featureDoc'.")
+
+
+    - name: Debug Connection String
+      run: |
+        echo "Using connection string: jdbc:postgresql://${{ env.RDS_ENDPOINT }}:5432/${{ vars.DB_NAME }}?user=${{ vars.DB_MASTER_USERNAME }}&password=${{ secrets.DB_MASTER_PASSWORD }}"
