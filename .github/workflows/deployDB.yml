@@ -91,7 +91,8 @@ jobs:
         docker run --rm \
           -v $(pwd)/flyway/sql/migrations:/flyway/sql \
           flyway/flyway migrate \
-          -url="jdbc:sqlserver://${{ env.RDS_ENDPOINT }}:1433;databaseName=${{ vars.DB_NAME }};encrypt=true;trustServerCertificate=true" \
+          
+          -url="jdbc:postgresql://${{ env.RDS_ENDPOINT }}:5432;databaseName=${{ vars.DB_NAME }};encrypt=true;trustServerCertificate=true" \
           -user=${{ vars.DB_MASTER_USERNAME }} \
           -password=${{ secrets.DB_MASTER_PASSWORD }}
           
