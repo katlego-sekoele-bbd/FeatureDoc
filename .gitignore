@@ -3,3 +3,53 @@
 **/*.env.*
 # allow local.env
 !.env.local
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+
+
+# Spring Boot specific
+target/
+*.jar
+*.war
+*.ear
+*.tar.gz
+*.zip
+
+# Build directory (Maven, Gradle)
+.build/
+.gradle/
+
+# Local configuration files
+*.log
+*.class
+*.db
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Dependency directories (Maven, Gradle)
+node_modules/
+*.npm/
+
+# Eclipse files
+.project
+.classpath
+.settings/
+
+# Other IDE-specific files
+.vscode/
+
+# Gradle Wrapper files (optional, if you're using Gradle)
+gradle-wrapper.jar
+gradle-wrapper.properties
+
+# Maven Wrapper files (optional, if you're using Maven)
+.mvn/
+mvnw
+mvnw.cmd
+
+# JDK related
+*.jdk
