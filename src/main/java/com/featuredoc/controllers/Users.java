@@ -19,14 +19,32 @@ class Users {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/allusers")
+    @GetMapping("/users")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    @RequestMapping("/users")
-    public String home() {
-        return "Let's pretend this is a list of users";
+    // Get a user by ID
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+        Optional<User> user = userService.getUserById(id);
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
+    @PostMapping("/register")
+    public String registerUser(@RequestBody User request) {
+        // Process the registration request
+        String name = request.getName();
+        String email = request.getEmail();
+        // Perform business logic (e.g., save to database, send confirmation email, etc.)
+        System.out.println("Registering user: " + name + " with email: " + email);
+        // Return a response
+        return "User registered successfully!";
+    }
+
+
+
+
 
 }
