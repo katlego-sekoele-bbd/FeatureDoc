@@ -26,7 +26,8 @@ jobs:
         id: create-bucket
         run: |
           BUCKET_NAME="featureDoc-bucket"
-          aws s3api create-bucket --bucket $BUCKET_NAME --region ${{ vars.AWS_REGION }}
+          aws s3api create-bucket --bucket $BUCKET_NAME --region ${{ vars.AWS_REGION }} \
+                    --create-bucket-configuration LocationConstraint=${{ vars.AWS_REGION }}
           echo "Bucket created with name: $BUCKET_NAME"
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_OUTPUT
 
