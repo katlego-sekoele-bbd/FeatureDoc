@@ -22,34 +22,59 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Create S3 Bucket
-        id: create-bucket
+      - name: Check if S3 Bucket exists
+        id: check-bucket
         run: |
           BUCKET_NAME="featuredoc-bucket"
-          aws s3api create-bucket --bucket $BUCKET_NAME --region ${{ vars.AWS_REGION }} \
-                    --create-bucket-configuration LocationConstraint=${{ vars.AWS_REGION }}
+          if aws s3api head-bucket --bucket $BUCKET_NAME 2>/dev/null; then
+            echo "Bucket $BUCKET_NAME already exists. Exiting."
+            echo "BUCKET_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "Bucket $BUCKET_NAME does not exist. Proceeding with creation."
+            echo "BUCKET_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create S3 Bucket
+        id: create-bucket
+        if: env.BUCKET_EXISTS == 'false'
+        run: |
+          BUCKET_NAME="featuredoc-bucket"
+          AWS_REGION="${{ vars.AWS_REGION }}"
+
+          if [[ "$AWS_REGION" == "us-east-1" ]]; then
+            # For us-east-1, do not specify a LocationConstraint
+            aws s3api create-bucket --bucket $BUCKET_NAME --region $AWS_REGION
+          else
+            # For all other regions, specify the LocationConstraint
+            aws s3api create-bucket --bucket $BUCKET_NAME --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
+          fi
+
           echo "Bucket created with name: $BUCKET_NAME"
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_OUTPUT
 
       - name: Configure Bucket Ownership Controls
+        if: env.BUCKET_EXISTS == 'false'
         run: |
           aws s3api put-bucket-ownership-controls \
               --bucket featuredoc-bucket \
               --ownership-controls 'Rules=[{ObjectOwnership=BucketOwnerPreferred}]'
 
       - name: Configure Public Access Block
+        if: env.BUCKET_EXISTS == 'false'
         run: |
           aws s3api put-public-access-block \
               --bucket featuredoc-bucket \
               --public-access-block-configuration "BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false"
 
       - name: Configure Bucket ACL
+        if: env.BUCKET_EXISTS == 'false'
         run: |
           aws s3api put-bucket-acl \
-              --bucket cindi-and-bernard-bucket-1 \
+              --bucket featuredoc-bucket \
               --acl public-read
 
       - name: Apply Bucket Policy
+        if: env.BUCKET_EXISTS == 'false'
         run: |
           POLICY='{
             "Version": "2012-10-17",
