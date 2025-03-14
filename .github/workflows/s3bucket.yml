@@ -1,0 +1,67 @@
+name: AWS S3 Bucket Creation and Configuration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-s3-bucket:
+    runs-on: ubuntu-latest
+    outputs:
+      bucket-name: ${{ steps.create-bucket.outputs.BUCKET_NAME }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create S3 Bucket
+        id: create-bucket
+        run: |
+          BUCKET_NAME="featureDoc-bucket"
+          aws s3api create-bucket --bucket $BUCKET_NAME --region ${{ vars.AWS_REGION }}
+          echo "Bucket created with name: $BUCKET_NAME"
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_OUTPUT
+
+      - name: Configure Bucket Ownership Controls
+        run: |
+          aws s3api put-bucket-ownership-controls \
+              --bucket featureDoc-bucket \
+              --ownership-controls 'Rules=[{ObjectOwnership=BucketOwnerPreferred}]'
+
+      - name: Configure Public Access Block
+        run: |
+          aws s3api put-public-access-block \
+              --bucket featureDoc-bucket \
+              --public-access-block-configuration "BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false"
+
+      - name: Configure Bucket ACL
+        run: |
+          aws s3api put-bucket-acl \
+              --bucket cindi-and-bernard-bucket-1 \
+              --acl public-read
+
+      - name: Apply Bucket Policy
+        run: |
+          POLICY='{
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": ["s3:GetObject"],
+                "Resource": [
+                  "arn:aws:s3:::featureDoc-bucket",
+                  "arn:aws:s3:::featureDoc-bucket/*"
+                ]
+              }
+            ]
+          }'
+          aws s3api put-bucket-policy --bucket featureDoc-bucket --policy "$POLICY"
+          echo "Bucket policy applied."
