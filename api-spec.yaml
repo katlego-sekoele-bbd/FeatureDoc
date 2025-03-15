@@ -1,0 +1,1161 @@
+openapi: 3.0.3
+info:
+  title: FeatureDoc API
+  description: API for managing features, versions, users, and roles in the FeatureDoc application
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Localhost development server
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userID:
+          type: integer
+          format: int64
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+      required:
+        - name
+        - email
+
+    Role:
+      type: object
+      properties:
+        roleID:
+          type: integer
+          format: int64
+          readOnly: true
+        roleName:
+          type: string
+          maxLength: 255
+      required:
+        - roleName
+
+    UserRole:
+      type: object
+      properties:
+        roleID:
+          type: integer
+          format: int64
+        userID:
+          type: integer
+          format: int64
+      required:
+        - roleID
+        - userID
+
+    Feature:
+      type: object
+      properties:
+        featureID:
+          type: integer
+          format: int64
+          readOnly: true
+        createdBy:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - createdBy
+
+    Priority:
+      type: object
+      properties:
+        priorityID:
+          type: integer
+          format: int64
+          readOnly: true
+        description:
+          type: string
+          maxLength: 255
+      required:
+        - description
+
+    FeatureStatus:
+      type: object
+      properties:
+        featureStatusID:
+          type: integer
+          format: int64
+          readOnly: true
+        description:
+          type: string
+          maxLength: 225
+      required:
+        - description
+
+    FeatureVersion:
+      type: object
+      properties:
+        featureVersionID:
+          type: integer
+          format: int64
+          readOnly: true
+        updateBy:
+          type: integer
+          format: int64
+        featureID:
+          type: integer
+          format: int64
+        featureStatusID:
+          type: integer
+          format: int64
+        priorityID:
+          type: integer
+          format: int64
+        assignedTo:
+          type: integer
+          format: int64
+        name:
+          type: string
+          maxLength: 255
+        shortDescription:
+          type: string
+          maxLength: 255
+        updatedDate:
+          type: string
+          format: date-time
+          readOnly: true
+        deletedDate:
+          type: string
+          format: date-time
+          nullable: true
+        url:
+          type: string
+          maxLength: 225
+      required:
+        - updateBy
+        - featureID
+        - featureStatusID
+        - priorityID
+        - assignedTo
+        - name
+        - url
+
+    LoginRequest:
+      type: object
+      properties:
+        idToken:
+          type: string
+          description: Google ID token
+      required:
+        - idToken
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - accessToken
+        - refreshToken
+        - user
+
+    RegisterRequest:
+      type: object
+      properties:
+        idToken:
+          type: string
+          description: Google ID token
+        defaultRole:
+          type: string
+          description: Default role to assign to the new user
+      required:
+        - idToken
+
+    FeatureRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        shortDescription:
+          type: string
+          maxLength: 255
+        doc:
+          type: string
+          nullable: true
+        featureStatusID:
+          type: integer
+          format: int64
+        priorityID:
+          type: integer
+          format: int64
+        assignedTo:
+          type: integer
+          format: int64
+        url:
+          type: string
+          maxLength: 225
+      required:
+        - name
+        - featureStatusID
+        - priorityID
+        - assignedTo
+        - url
+
+    FeatureVersionDateRequest:
+      type: object
+      properties:
+        featureID:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+      required:
+        - featureID
+        - startDate
+        - endDate
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - not-implemented
+        - Authentication
+      summary: Login user with Google ID token
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      tags:
+        - not-implemented
+        - Authentication
+      summary: Register new user with Google ID token
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users:
+    get:
+      tags:
+        - not-implemented
+        - Users
+      summary: Get all users
+      operationId: getUsers
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags:
+        - not-implemented
+        - Users
+      summary: Create a new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userID}:
+    parameters:
+      - name: userID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Users
+      summary: Get user by ID
+      operationId: getUserById
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - not-implemented
+        - Users
+      summary: Update user
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - not-implemented
+        - Users
+      summary: Delete user
+      operationId: deleteUser
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userID}/role:
+    parameters:
+      - name: userID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Users
+        - Roles
+      summary: Get roles for a user
+      operationId: getUserRoles
+      responses:
+        '200':
+          description: List of roles for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - not-implemented
+        - Users
+        - Roles
+      summary: Assign role to user
+      operationId: assignRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRole'
+      responses:
+        '201':
+          description: Roles assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRole'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User or role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: Get all roles
+      operationId: getRoles
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+    post:
+      tags:
+        - not-implemented
+        - Roles
+      summary: Create a new role
+      operationId: createRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '201':
+          description: Roles created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /roles/{roleID}:
+    parameters:
+      - name: roleID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Roles
+      summary: Get role by ID
+      operationId: getRoleById
+      responses:
+        '200':
+          description: Roles found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '404':
+          description: Roles not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - not-implemented
+        - Roles
+      summary: Update role
+      operationId: updateRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          description: Roles updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Roles not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - not-implemented
+        - Roles
+      summary: Delete role
+      operationId: deleteRole
+      responses:
+        '204':
+          description: Roles deleted successfully
+        '404':
+          description: Roles not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /priorities:
+    get:
+      tags:
+        - not-implemented
+        - Priorities
+      summary: Get all priorities
+      operationId: getPriorities
+      responses:
+        '200':
+          description: List of priorities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Priority'
+    post:
+      tags:
+        - not-implemented
+        - Priorities
+      summary: Create a new priority
+      operationId: createPriority
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Priority'
+      responses:
+        '201':
+          description: Priority created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Priority'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /priorities/{priorityID}:
+    parameters:
+      - name: priorityID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Priorities
+      summary: Get priority by ID
+      operationId: getPriorityById
+      responses:
+        '200':
+          description: Priority found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Priority'
+        '404':
+          description: Priority not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - not-implemented
+        - Priorities
+      summary: Update priority
+      operationId: updatePriority
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Priority'
+      responses:
+        '200':
+          description: Priority updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Priority'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Priority not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - not-implemented
+        - Priorities
+      summary: Delete priority
+      operationId: deletePriority
+      responses:
+        '204':
+          description: Priority deleted successfully
+        '404':
+          description: Priority not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /statuses:
+    get:
+      tags:
+        - not-implemented
+        - Statuses
+      summary: Get all feature statuses
+      operationId: getFeatureStatuses
+      responses:
+        '200':
+          description: List of feature statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureStatus'
+    post:
+      tags:
+        - not-implemented
+        - Statuses
+      summary: Create a new feature status
+      operationId: createFeatureStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureStatus'
+      responses:
+        '201':
+          description: Feature status created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureStatus'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /statuses/{statusID}:
+    parameters:
+      - name: statusID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Statuses
+      summary: Get feature status by ID
+      operationId: getFeatureStatusById
+      responses:
+        '200':
+          description: Feature status found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureStatus'
+        '404':
+          description: Feature status not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - not-implemented
+        - Statuses
+      summary: Update feature status
+      operationId: updateFeatureStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureStatus'
+      responses:
+        '200':
+          description: Feature status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureStatus'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Feature status not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - not-implemented
+        - Statuses
+      summary: Delete feature status
+      operationId: deleteFeatureStatus
+      responses:
+        '204':
+          description: Feature status deleted successfully
+        '404':
+          description: Feature status not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /features:
+    get:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get all features with latest versions
+      operationId: getAllFeatures
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Filter by status ID
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Filter by priority ID
+      responses:
+        '200':
+          description: List of features with latest versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Feature'
+                    - type: object
+                      properties:
+                        latestVersion:
+                          $ref: '#/components/schemas/FeatureVersion'
+    post:
+      tags:
+        - not-implemented
+        - Features
+      summary: Create a new feature
+      operationId: addFeature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureRequest'
+      responses:
+        '201':
+          description: Feature created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Feature'
+                  - type: object
+                    properties:
+                      version:
+                        $ref: '#/components/schemas/FeatureVersion'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /features/user:
+    get:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get features by user
+      operationId: getFeaturesByUser
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+          description: User email
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Filter by status ID
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ name, updatedDate, priority ]
+            default: updatedDate
+          description: Field to sort by
+        - name: sortOrder
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+            default: desc
+          description: Sort order (ascending or descending)
+      responses:
+        '200':
+          description: List of features assigned to user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Feature'
+                    - type: object
+                      properties:
+                        latestVersion:
+                          $ref: '#/components/schemas/FeatureVersion'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /features/versions/by-date:
+    post:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get feature versions by date range
+      operationId: getFeatureVersionsByDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureVersionDateRequest'
+      responses:
+        '200':
+          description: List of feature versions within date range
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureVersion'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /features/{featureID}:
+    parameters:
+      - name: featureID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get feature by ID with latest version
+      operationId: getFeatureById
+      responses:
+        '200':
+          description: Feature found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Feature'
+                  - type: object
+                    properties:
+                      latestVersion:
+                        $ref: '#/components/schemas/FeatureVersion'
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - not-implemented
+        - Features
+      summary: Edit feature (creates a new version)
+      operationId: editFeature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureRequest'
+      responses:
+        '200':
+          description: Feature updated successfully with new version
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Feature'
+                  - type: object
+                    properties:
+                      newVersion:
+                        $ref: '#/components/schemas/FeatureVersion'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - not-implemented
+        - Features
+      summary: Delete feature (soft delete by updating status and deleted date)
+      operationId: deleteFeature
+      responses:
+        '204':
+          description: Feature deleted successfully
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /features/{featureID}/versions:
+    parameters:
+      - name: featureID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get all versions of a feature
+      operationId: getFeatureVersions
+      responses:
+        '200':
+          description: List of feature versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureVersion'
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /features/{featureID}/versions/{versionID}:
+    parameters:
+      - name: featureID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: versionID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get specific version of a feature
+      operationId: getFeatureVersionById
+      responses:
+        '200':
+          description: Feature version found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureVersion'
+        '404':
+          description: Feature or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /versions/{versionID}:
+    parameters:
+      - name: versionID
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - not-implemented
+        - Features
+      summary: Get feature version by ID
+      operationId: getVersionById
+      responses:
+        '200':
+          description: Feature version found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureVersion'
+        '404':
+          description: Version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
