@@ -500,7 +500,6 @@ paths:
                   $ref: '#/components/schemas/Role'
     post:
       tags:
-        - not-implemented
         - Roles
       summary: Create a new role
       operationId: createRole
@@ -550,40 +549,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    put:
-      tags:
-        - not-implemented
-        - Roles
-      summary: Update role
-      operationId: updateRole
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Role'
-      responses:
-        '200':
-          description: Roles updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Role'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Roles not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
     delete:
       tags:
-        - not-implemented
         - Roles
       summary: Delete role
       operationId: deleteRole
@@ -600,7 +567,6 @@ paths:
   /priorities:
     get:
       tags:
-        - not-implemented
         - Priorities
       summary: Get all priorities
       operationId: getPriorities
@@ -615,7 +581,6 @@ paths:
                   $ref: '#/components/schemas/Priority'
     post:
       tags:
-        - not-implemented
         - Priorities
       summary: Create a new priority
       operationId: createPriority
@@ -649,7 +614,6 @@ paths:
           format: int64
     get:
       tags:
-        - not-implemented
         - Priorities
       summary: Get priority by ID
       operationId: getPriorityById
@@ -666,40 +630,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    put:
-      tags:
-        - not-implemented
-        - Priorities
-      summary: Update priority
-      operationId: updatePriority
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Priority'
-      responses:
-        '200':
-          description: Priority updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Priority'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Priority not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
     delete:
       tags:
-        - not-implemented
         - Priorities
       summary: Delete priority
       operationId: deletePriority
@@ -713,11 +645,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /statuses:
+  /feature-statuses:
     get:
       tags:
-        - not-implemented
-        - Statuses
+        - Feature Statuses
       summary: Get all feature statuses
       operationId: getFeatureStatuses
       responses:
@@ -731,8 +662,7 @@ paths:
                   $ref: '#/components/schemas/FeatureStatus'
     post:
       tags:
-        - not-implemented
-        - Statuses
+        - Feature Statuses
       summary: Create a new feature status
       operationId: createFeatureStatus
       requestBody:
@@ -755,9 +685,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /statuses/{statusID}:
+  /feature-statuses/{featureStatusID}:
     parameters:
-      - name: statusID
+      - name: featureStatusID
         in: path
         required: true
         schema:
@@ -765,8 +695,7 @@ paths:
           format: int64
     get:
       tags:
-        - not-implemented
-        - Statuses
+        - Feature Statuses
       summary: Get feature status by ID
       operationId: getFeatureStatusById
       responses:
@@ -782,41 +711,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    put:
-      tags:
-        - not-implemented
-        - Statuses
-      summary: Update feature status
-      operationId: updateFeatureStatus
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FeatureStatus'
-      responses:
-        '200':
-          description: Feature status updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FeatureStatus'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Feature status not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
     delete:
       tags:
-        - not-implemented
-        - Statuses
+        - Feature Statuses
       summary: Delete feature status
       operationId: deleteFeatureStatus
       responses:
