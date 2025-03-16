@@ -31,10 +31,11 @@ jobs:
         path: target/*.jar
 
     - name: Deploy to EC2
-#      env:
+      env:
+        PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
 #        EC2_HOST: ${{ secrets.EC2_HOST }}
 #        EC2_USER: ${{ secrets.EC2_USER }}
-#        PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+
         # OAUTH_CLIENT_ID:  ${{ secrets.OAUTH_CLIENT_ID }}
         # OAUTH_CLIENT_SECRET:  ${{ secrets.OAUTH_CLIENT_SECRET }}
         # DATABASE_CONNECTION_STRING :  ${{ secrets.DATABASE_CONNECTION_STRING }}
@@ -42,19 +43,21 @@ jobs:
         # Save SSH key
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
+    
         # Copy JAR to EC2
-        scp -v -o StrictHostKeyChecking=no -i private_key.pem server/source_control_insights/target/*.jar $ubuntu@$ec2-13-245-30-62.af-south-1.compute.amazonaws.com:/home/ubuntu/server.jar
+        scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com:/home/ubuntu/server.jar
+    
         # Connect and set up environment variables & run the server
-        ssh -i private_key.pem ubuntu@$ec2-13-245-30-62.af-south-1.compute.amazonaws.com << 'EOF'
-          
+        ssh -i private_key.pem ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com << 'EOF'
+        
           # Kill any running instance of the server
           pkill -f "java -jar /home/ubuntu/server.jar" || true
+    
           # Run the JAR in the background
-          nohup java -jar /home/ec2-user/server.jar > server.log 2>&1 &
+          nohup java -jar /home/ubuntu/server.jar > server.log 2>&1 &
+    
           echo "Server is running..."
         EOF
     - name: Clean Up
       run: rm -f private_key.pem
 
-      #ubuntu - ec2_user
-      #ec2-13-245-30-62.af-south-1.compute.amazonaws.com - ec2_host
