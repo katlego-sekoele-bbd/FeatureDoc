@@ -46,7 +46,7 @@ jobs:
           pkill -f "java -jar /home/ubuntu/server.jar" || true
     
           # Run the JAR file in the background and log output to server.log
-          nohup java -jar /home/ubuntu/server.jar > /home/ubuntu/server.log 2>&1 &
+          setsid nohup java -jar /home/ubuntu/server.jar > /home/ubuntu/server.log 2>&1 &
     
           echo "Server is running..."
           
