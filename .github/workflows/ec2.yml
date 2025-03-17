@@ -42,15 +42,15 @@ jobs:
         # Connect and set up environment variables & run the server
         ssh -i private_key.pem ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com << 'EOF'
           
-         sudo systemctl stop server.service || true
-          
-          # Deploy the new JAR (already copied by scp)
-          sudo cp /home/ubuntu/server.jar /home/ubuntu/server.jar.bak  # Optionally back up the old jar
-
-          # Start the service with systemd
-          sudo systemctl start server.service
-          
+        # Stop any previously running server instance (if any)
+          pkill -f "java -jar /home/ubuntu/server.jar" || true
+    
+          # Run the JAR file in the background and log output to server.log
+          nohup java -jar /home/ubuntu/server.jar > /home/ubuntu/server.log 2>&1 &
+    
           echo "Server is running..."
+          
+          
         EOF
     - name: Clean Up
       run: rm -f private_key.pem
