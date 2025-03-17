@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - cindi/feature/ec2
 
 jobs:
   build-and-deploy:
@@ -47,10 +47,14 @@ jobs:
         # Connect and set up environment variables & run the server
         ssh -i private_key.pem ubuntu@$ec2-13-245-30-62.af-south-1.compute.amazonaws.com << 'EOF'
           
-          # Kill any running instance of the server
-          pkill -f "java -jar /home/ubuntu/server.jar" || true
-          # Run the JAR in the background
-          nohup java -jar /home/ec2-user/server.jar > server.log 2>&1 &
+         sudo systemctl stop server.service || true
+          
+          # Deploy the new JAR (already copied by scp)
+          sudo cp /home/ubuntu/server.jar /home/ubuntu/server.jar.bak  # Optionally back up the old jar
+
+          # Start the service with systemd
+          sudo systemctl start server.service
+          
           echo "Server is running..."
         EOF
     - name: Clean Up
