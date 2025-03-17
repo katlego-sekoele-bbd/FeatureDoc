@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW FeatureView AS
+CREATE OR REPLACE VIEW "FeatureView" AS
 SELECT 
     fv."Name" AS "FeatureName",
     u1."Name" AS "CreatedBy",
