@@ -38,15 +38,15 @@ jobs:
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
         # Copy JAR to EC2
-        scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com:/home/ubuntu/server.jar
+        scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com:/home/ec2-user/server.jar
         # Connect and set up environment variables & run the server
-        ssh -i private_key.pem ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com << 'EOF'
+        ssh -i private_key.pem ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com << 'EOF'
           
         # Stop any previously running server instance (if any)
-          pkill -f "java -jar /home/ubuntu/server.jar" || true
-    
+          pkill -f "java -jar /home/ec2-user/server.jar" || true
+          
           # Run the JAR file in the background and log output to server.log
-          setsid nohup java -jar /home/ubuntu/server.jar > /home/ubuntu/server.log 2>&1 &
+          nohup java -jar /home/ec2-user/server.jar > /home/ubuntu/server.log 2>&1 &
     
           echo "Server is running..."
           
