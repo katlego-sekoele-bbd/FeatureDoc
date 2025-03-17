@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW UserRoleView AS
+CREATE OR REPLACE VIEW "UserRoleView" AS
 SELECT 
     u."UserID",
     r."RoleID",
