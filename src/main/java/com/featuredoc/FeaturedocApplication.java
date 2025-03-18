@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FeaturedocApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(FeaturedocApplication.class, args);
 	}
 
