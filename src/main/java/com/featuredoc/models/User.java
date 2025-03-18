@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 @Entity
 public class User {
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userID;
@@ -12,6 +14,15 @@ public class User {
     private String name;
 
     private String email;
+
+    public User(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
+
+    public User() {
+    }
+
 
     public Integer getUserID() {
         return userID;
