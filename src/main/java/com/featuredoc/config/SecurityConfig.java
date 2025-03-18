@@ -1,7 +1,9 @@
 package com.featuredoc.config;
 
+import com.featuredoc.models.User;
 import com.featuredoc.services.CustomOAuth2UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.featuredoc.services.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -42,6 +44,9 @@ public class SecurityConfig {
 
     @Autowired
     public CustomOAuth2UserService customOAuth2UserService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     @Lazy
@@ -95,6 +100,16 @@ public class SecurityConfig {
                     token.getAuthorizedClientRegistrationId(),
                     token.getName());
 
+            System.out.println(client.getClientRegistration().getClientName());
+            System.out.println(token.getPrincipal().getAttributes().get("email"));
+            System.out.println(token.getPrincipal().getAttributes());
+
+            String email = (String) token.getPrincipal().getAttributes().get("email");
+            String fullName = token.getPrincipal().getAttributes().get("given_name") + " " + token.getPrincipal().getAttributes().get("family_name");
+
+            User user = userService.getUserByEmail(email)
+                    .orElse( userService.createUser(new User(fullName, email)));
+
             String accessToken = client.getAccessToken().getTokenValue();
 
             String jwtToken = generateJwtToken(accessToken);
@@ -113,8 +128,6 @@ public class SecurityConfig {
             } catch (IOException e) {
                 e.printStackTrace(); // Handle the exception properly in production code
             }
-
-
         };
     }
 
