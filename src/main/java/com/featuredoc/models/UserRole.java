@@ -4,11 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Data 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor 
 public class UserRole {
 
     @EmbeddedId 
     private UserRoleId id;
+
+    public void setId(UserRoleId userRoleId) {
+        this.id = userRoleId;
+    }
 }
