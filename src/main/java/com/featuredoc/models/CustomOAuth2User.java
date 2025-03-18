@@ -1,6 +1,7 @@
 package com.featuredoc.models;
 
 import com.featuredoc.models.User;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -10,9 +11,9 @@ import java.util.Map;
 public class CustomOAuth2User implements OAuth2User {
 
     private final User user;
-    private final Collection<SimpleGrantedAuthority> authorities;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomOAuth2User(User user, Collection<SimpleGrantedAuthority> authorities) {
+    public CustomOAuth2User(User user, Collection<? extends GrantedAuthority> authorities) {
         this.user = user;
         this.authorities = authorities;
     }
@@ -32,7 +33,7 @@ public class CustomOAuth2User implements OAuth2User {
     }
 
     @Override
-    public Collection<SimpleGrantedAuthority> getAuthorities() {
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
