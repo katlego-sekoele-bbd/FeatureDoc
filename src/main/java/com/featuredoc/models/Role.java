@@ -4,6 +4,7 @@ import lombok.*;
 
 @Entity
 @Data
+@NoArgsConstructor
 @RequiredArgsConstructor
 public class Role {
 
