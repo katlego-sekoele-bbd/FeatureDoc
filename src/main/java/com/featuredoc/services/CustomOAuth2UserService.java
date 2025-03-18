@@ -36,11 +36,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         "User Not Found"
                 ));
 
+        String accessToken = userRequest.getAccessToken().getTokenValue();
+
+
         Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) oauth2User.getAuthorities();
 
+        // Optionally, map more custom attributes or assign roles here
+        // For example, you could add a custom role like this:
+        // if (user.getEmail().endsWith("@admin.com")) {
+        //     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        // }
         // Here you can map additional attributes or roles if needed
         // For example, you can assign authorities (roles) to the user.
-        return new CustomOAuth2User(user, (Collection<SimpleGrantedAuthority>) oauth2User.getAuthorities());
+        return new CustomOAuth2User(user, authorities);
     }
+
+//    public void storeAccessToken(Long userId, String accessToken) {
+//        // Example: Store token securely in your database
+//        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+//        user.setAccessToken(accessToken);
+//        userRepository.save(user);
+//    }
 
 }
