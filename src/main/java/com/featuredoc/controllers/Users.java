@@ -1,5 +1,6 @@
 package com.featuredoc.controllers;
 
+import com.featuredoc.services.EmailService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.featuredoc.models.User;
@@ -19,9 +20,17 @@ class Users {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EmailService emailService;
+
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @GetMapping("/sendEmail")
+    public void sendEmail () {
+        emailService.sendSimpleMessage("keith.hughes@bbd.co.za", "Test", "This is a test message");
     }
 
     // Get a user by ID
