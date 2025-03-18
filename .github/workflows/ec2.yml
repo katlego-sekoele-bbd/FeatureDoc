@@ -33,27 +33,33 @@ jobs:
     - name: Deploy to EC2
       env:
         PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+#        EC2_HOST: ${{ secrets.EC2_HOST }}
+#        EC2_USER: ${{ secrets.EC2_USER }}
+         
+        # OAUTH_CLIENT_ID:  ${{ secrets.OAUTH_CLIENT_ID }}
+        # OAUTH_CLIENT_SECRET:  ${{ secrets.OAUTH_CLIENT_SECRET }}
+        # DATABASE_CONNECTION_STRING :  ${{ secrets.DATABASE_CONNECTION_STRING }}
       run: |
         # Save SSH key
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
+
         # Copy JAR to EC2
-        scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com:/home/ec2-user/server.jar
-        # Connect and set up environment variables & run the server
-        ssh -i private_key.pem ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com << 'EOF'
+        scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com:/home/ubuntu/server.jar
+
+        # SSH into EC2 and manage server via systemd
+        ssh -i private_key.pem ubuntu@ec2-13-245-30-62.af-south-1.compute.amazonaws.com << 'EOF'
+          # Stop the current Java service (if running)
+          sudo systemctl stop server.service || true
           
-        # Stop any previously running server instance (if any)
-          pkill -f "java -jar /home/ec2-user/server.jar" || true
+          # Start the service with systemd
+          sudo systemctl start server.service
           
-          # Run the JAR file in the background and log output to server.log
-          nohup java -jar /home/ec2-user/server.jar > /home/ubuntu/server.log 2>&1 &
-    
           echo "Server is running..."
           
           
         EOF
+
     - name: Clean Up
       run: rm -f private_key.pem
 
-      #ubuntu - ec2_user
-      #ec2-13-245-30-62.af-south-1.compute.amazonaws.com - ec2_host
