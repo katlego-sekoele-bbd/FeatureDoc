@@ -100,10 +100,6 @@ public class SecurityConfig {
                     token.getAuthorizedClientRegistrationId(),
                     token.getName());
 
-            System.out.println(client.getClientRegistration().getClientName());
-            System.out.println(token.getPrincipal().getAttributes().get("email"));
-            System.out.println(token.getPrincipal().getAttributes());
-
             String email = (String) token.getPrincipal().getAttributes().get("email");
             String fullName = token.getPrincipal().getAttributes().get("given_name") + " " + token.getPrincipal().getAttributes().get("family_name");
 
