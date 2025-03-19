@@ -1,36 +1,25 @@
 package com.featuredoc.config;
 
 import com.featuredoc.filters.JwtAuthenticationFilter;
-import com.featuredoc.models.User;
 import com.featuredoc.services.CustomOAuth2UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.featuredoc.services.UserService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import com.featuredoc.helpers.Jwt;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -42,6 +31,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
 
 @Configuration
 @EnableWebSecurity
@@ -58,6 +48,10 @@ public class SecurityConfig {
 
     @Autowired
     @Lazy
+    Jwt jwt;
+
+    @Autowired
+    @Lazy
     private OAuth2AuthorizedClientService authorizedClientService;
 
     @Bean
@@ -68,7 +62,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
-                        (auth -> auth.anyRequest().authenticated())
+                        (auth -> auth
+                                .requestMatchers("/auth/token").permitAll()
+                                .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .oauth2Login(oauth2Login -> oauth2Login
@@ -80,17 +76,12 @@ public class SecurityConfig {
                 .build();
     }
 
-
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
         return customOAuth2UserService;
     }
 
-
-
     private AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
-
-            String name = authentication.getName();
 
             OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
             OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
@@ -101,7 +92,7 @@ public class SecurityConfig {
 
             String accessToken = client.getAccessToken().getTokenValue();
 
-            String jwtToken = generateJwtToken(accessToken);
+            String jwtToken = jwt.generateJwtToken(accessToken);
 
             Map<String, String> responseData = new HashMap<>();
             responseData.put("status", "success");
@@ -139,17 +130,6 @@ public class SecurityConfig {
                 e.printStackTrace(); // Handle the exception properly in production code
             }
         };
-    }
-
-    public String generateJwtToken(String accessToken) {
-
-        // Create the JWT claims
-        return Jwts.builder()
-                .claim("access_token", accessToken) // You can include the OAuth2 access token as a claim
-                .issuedAt(new Date()) // Set issue time
-                .expiration(new Date(System.currentTimeMillis() + 3600000)) // Set expiration (1 hour from now)
-                .signWith(secretKey())
-                .compact(); // Create the JWT token string
     }
 }
 
