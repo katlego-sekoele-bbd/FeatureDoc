@@ -2,6 +2,9 @@ package com.featuredoc.services;
 
 import com.featuredoc.models.CustomOAuth2User;
 import com.featuredoc.models.User;
+import com.featuredoc.models.UserRole;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -11,13 +14,21 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserService userService;
+
+    @Autowired
+    private Environment env;
+
+    @Autowired
+    private UserRoleService userRoleService;
 
     public CustomOAuth2UserService(UserService userService) {
         this.userService = userService;
@@ -48,10 +59,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) oauth2User.getAuthorities();
 
         // Optionally, map more custom attributes or assign roles here
-        // For example, you could add a custom role like this:
-        // if (user.getEmail().endsWith("@admin.com")) {
-        //     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        // }
+        List<Integer> deletePermittedRoleIDs = Stream.of(env.getProperty("CAN_DELETE").split(",")).map(Integer::valueOf).toList();
+        List<UserRole> userRoles = userRoleService.getRolesByUserId(user.getUserID());
+        boolean canDelete = userRoles.stream().anyMatch(userRole -> deletePermittedRoleIDs.contains(userRole.getId().getRoleID()));
+
+        if (canDelete) {
+             authorities.add(new SimpleGrantedAuthority("CAN_DELETE"));
+         } else {
+             // this type of user won't have any delete grants
+         }
         // Here you can map additional attributes or roles if needed
         // For example, you can assign authorities (roles) to the user.
         return new CustomOAuth2User(user, authorities);
