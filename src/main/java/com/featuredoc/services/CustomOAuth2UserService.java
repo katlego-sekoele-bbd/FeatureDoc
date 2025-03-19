@@ -11,6 +11,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -29,15 +31,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oauth2User = super.loadUser(userRequest);
 
         String email = oauth2User.getAttribute("email");
+        String name = oauth2User.getAttribute("given_name");
+        String surname = oauth2User.getAttribute("family_name");
 
-        User user = userService.getUserByEmail(email)
-                .orElseThrow(() -> new OAuth2AuthenticationException(
-                        new OAuth2Error("401"),
-                        "User Not Found"
-                ));
+        User user;
+
+        try {
+            user = userService.getUserByEmail(email).get();
+        }
+        catch (NoSuchElementException e) {
+            user = userService.createUser(new User(name+ " "+ surname, email));
+        }
 
         String accessToken = userRequest.getAccessToken().getTokenValue();
-
 
         Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) oauth2User.getAuthorities();
 
