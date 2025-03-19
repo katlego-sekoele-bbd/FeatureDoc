@@ -92,7 +92,7 @@ public class SecurityConfig {
 
             String accessToken = client.getAccessToken().getTokenValue();
 
-            String jwtToken = jwt.generateJwtToken(accessToken);
+            String jwtToken = jwt.generateJwtToken(accessToken, email);
 
             Map<String, String> responseData = new HashMap<>();
             responseData.put("status", "success");

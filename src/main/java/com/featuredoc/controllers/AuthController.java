@@ -27,10 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class AuthController {
@@ -75,9 +72,9 @@ public class AuthController {
             response.getWriter().write("Failed to load user details");
             return;
         }
-
         // Step 3: Generate a JWT token
-        String jwtToken = generateJwtToken(accessToken);
+        String jwtToken = generateJwtToken(accessToken, oauth2User.getAttribute("email"));
+
         // Step 4: Return the JWT token to the client
         Map<String, String> responseData = new HashMap<>();
         responseData.put("access_token", jwtToken);
@@ -135,10 +132,16 @@ public class AuthController {
         return customOAuth2UserService.loadUser(userRequest);
     }
 
-    private String generateJwtToken(String accessToken) {
-        // Generate a JWT token (use your existing implementation)
+    public String generateJwtToken(String accessToken, String email) {
+        // Create the JWT claims
+
+        Map<String, String> claims = new HashMap<>();
+
+        claims.put("access_token", accessToken);
+        claims.put("email", email);
+
         return Jwts.builder()
-                .claim("access_token", accessToken)
+                .claims(claims)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
                 .signWith(secretKey) // Use your secret key
