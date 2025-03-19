@@ -1,5 +1,6 @@
 package com.featuredoc.filters;
 
+import com.featuredoc.helpers.Jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -27,8 +28,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    @Lazy
-    private SecretKey secretKey;
+    Jwt jwt;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                Jws<Claims> claims = verifyJwtToken(token);
+                Jws<Claims> claims = jwt.verifyJwtToken(token);
 
                 // Create an Authentication object and set it in the SecurityContext
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
-                // Token validation failed
+
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write(e.getMessage());
                 return;
@@ -63,23 +63,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-
-
-    public Jws<Claims> verifyJwtToken(String jwtToken) {
-        try {
-            // Rebuild the same key used for signing
-
-            // Parse and verify the token
-            return Jwts.parser()
-                    .verifyWith(secretKey) // Use the same key for verification
-                    .build()
-                    .parseSignedClaims(jwtToken); // Parse the token and validate its signature
-        } catch (SignatureException e) {
-            // Handle invalid signature
-            throw new IllegalArgumentException("Invalid JWT signature", e);
-        } catch (Exception e) {
-            // Handle other exceptions (e.g., expired token, malformed token)
-            throw new IllegalArgumentException("Invalid or expired JWT token", e);
-        }
-    }
 }
