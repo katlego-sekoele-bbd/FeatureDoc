@@ -13,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -56,6 +58,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
                         (auth -> auth.anyRequest().authenticated())
+                .csrf(AbstractHttpConfigurer::disable)
                 .oauth2Login(oauth2Login -> oauth2Login
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService()))
@@ -64,27 +67,6 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    public ClientRegistrationRepository clientRegistrationRepository() {
-        return new InMemoryClientRegistrationRepository(this.googleClientRegistration());
-    }
-
-    private ClientRegistration googleClientRegistration() {
-        return ClientRegistration.withRegistrationId("google")
-                .clientId("8421127185-l0d2bmeb37ri8f7qohh3miot46hgj6l4.apps.googleusercontent.com")
-                .clientSecret("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")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
-                .scope("openid", "profile", "email", "address", "phone")
-                .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
-                .tokenUri("https://www.googleapis.com/oauth2/v4/token")
-                .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
-                .userNameAttributeName(IdTokenClaimNames.SUB)
-                .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
-                .clientName("Google")
-                .build();
-    }
 
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
         return customOAuth2UserService;
@@ -101,10 +83,6 @@ public class SecurityConfig {
                     token.getName());
 
             String email = (String) token.getPrincipal().getAttributes().get("email");
-            String fullName = token.getPrincipal().getAttributes().get("given_name") + " " + token.getPrincipal().getAttributes().get("family_name");
-
-            User user = userService.getUserByEmail(email)
-                    .orElse( userService.createUser(new User(fullName, email)));
 
             String accessToken = client.getAccessToken().getTokenValue();
 
@@ -112,7 +90,7 @@ public class SecurityConfig {
 
             Map<String, String> responseData = new HashMap<>();
             responseData.put("status", "success");
-            responseData.put("message", name + " logged in successfully");
+            responseData.put("message", email + " logged in successfully");
             responseData.put("access_token", jwtToken);  // Include the JWT token in the response
 
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
