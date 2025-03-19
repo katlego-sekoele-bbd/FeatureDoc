@@ -7,5 +7,8 @@ flyway -url="jdbc:postgresql://$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB" \
        -password="$POSTGRES_PASSWORD" \
        -schemas="$POSTGRES_SCHEMA" \
        -configFiles=conf/flyway.conf \
+       -placeholders.DB_NAME=$POSTGRES_DB \
+       -placeholders.ADMIN_PASS=$ADMIN_PASS \
+       -placeholders.APP_PASS=$APP_PASS \
        migrate
 

@@ -137,21 +137,14 @@ insert into "User" ("Name", "Email") values ('Ariadne Oller', 'aoller2r@theatlan
 INSERT INTO "Role" ("RoleName")
 VALUES
   ('Developer'),
-  ('QA Engineer'),
-  ('Project Manager'),
-  ('Business Analyst'),
-  ('DevOps Engineer'),
   ('Product Owner'),
-  ('UX Designer'),
-  ('Scrum Master'),
-  ('Technical Lead'),
-  ('Support Engineer');
+  ('Scrum Master');
 
 -- ------------------------------------------------
 -- Assign each User a Role (round-robin)
 -- ------------------------------------------------
 INSERT INTO "UserRole" ("RoleID", "UserID")
-SELECT ((user_id - 1) % 10) + 1, user_id
+SELECT ((user_id - 1) % 3) + 1, user_id
 FROM (SELECT generate_series(1, 100) AS user_id) sub;
 
 -- ------------------------------------------------
