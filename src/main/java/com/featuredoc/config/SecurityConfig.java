@@ -1,5 +1,6 @@
 package com.featuredoc.config;
 
+import com.featuredoc.filters.JwtAuthenticationFilter;
 import com.featuredoc.models.User;
 import com.featuredoc.services.CustomOAuth2UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -33,6 +35,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -51,19 +54,29 @@ public class SecurityConfig {
     private UserService userService;
 
     @Autowired
+    JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
     @Lazy
     private OAuth2AuthorizedClientService authorizedClientService;
+
+    @Bean
+    public SecretKey secretKey() {
+        return Jwts.SIG.HS256.key().build(); // Generate a secure key
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
                         (auth -> auth.anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .oauth2Login(oauth2Login -> oauth2Login
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService()))
                         .successHandler(successHandler())
                         .failureHandler(failureHandler()))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
                 .build();
     }
 
@@ -71,6 +84,8 @@ public class SecurityConfig {
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
         return customOAuth2UserService;
     }
+
+
 
     private AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
@@ -128,26 +143,13 @@ public class SecurityConfig {
 
     public String generateJwtToken(String accessToken) {
 
-        SecretKey key = Jwts.SIG.HS256.key().build();
-
         // Create the JWT claims
         return Jwts.builder()
                 .claim("access_token", accessToken) // You can include the OAuth2 access token as a claim
                 .issuedAt(new Date()) // Set issue time
                 .expiration(new Date(System.currentTimeMillis() + 3600000)) // Set expiration (1 hour from now)
-                .signWith(key)
+                .signWith(secretKey())
                 .compact(); // Create the JWT token string
-    }
-
-    public Jws<Claims> verifyJwtToken(String jwtToken) {
-        try {
-            // Parse the token and validate its signature
-            return Jwts.parser()
-                    .verifyWith(Jwts.SIG.HS256.key().build())
-                    .build().parseSignedClaims(jwtToken);
-        } catch (SignatureException e) {
-            throw new IllegalArgumentException("Invalid or expired JWT token");
-        }
     }
 }
 
