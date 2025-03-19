@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -50,6 +52,7 @@ class FeatureStatusesTest {
 
 
     @Test
+    @WithMockUser()
     void getAllFeatureStatuses() throws Exception {
         when(featureStatusService.getAllFeatureStatuses())
                 .thenReturn(mockFeatureStatuses);
@@ -63,6 +66,7 @@ class FeatureStatusesTest {
     }
 
     @Test
+    @WithMockUser()
     void createFeatureStatus() throws Exception {
         when(featureStatusService.createFeatureStatus(mockCreateFeatureStatus))
                 .thenReturn(mockCreateFeatureStatus);
@@ -73,7 +77,7 @@ class FeatureStatusesTest {
         Integer expectedCreatedFeatureStatusID = mockCreateFeatureStatus.getFeatureStatusID();
         String expectedCreatedFeatureStatusDescription = mockCreateFeatureStatus.getDescription();
 
-        this.mockMvc.perform(post("/feature-statuses").contentType("application/json").content(featureStatusJson))
+        this.mockMvc.perform(post("/feature-statuses").with(csrf()).contentType("application/json").content(featureStatusJson))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.featureStatusID", isA(Integer.class)))
@@ -83,6 +87,7 @@ class FeatureStatusesTest {
     }
 
     @Test
+    @WithMockUser()
     void getFeatureStatusByID() throws Exception {
         final int validFeatureStatusID = 1;
         final int invalidFeatureStatusID = -1;
@@ -112,6 +117,7 @@ class FeatureStatusesTest {
     }
 
     @Test
+    @WithMockUser()
     void deleteFeatureStatusByID() throws Exception {
         final int validFeatureStatusID = 1;
         final int invalidFeatureStatusID = -1;
@@ -121,14 +127,14 @@ class FeatureStatusesTest {
         Mockito.doThrow(ConstraintViolationException.class).when(featureStatusService).deleteFeatureStatusById(invalidFeatureStatusID);
         Mockito.doThrow(ResourceNotFoundException.class).when(featureStatusService).deleteFeatureStatusById(nonExistentFeatureStatusID);
 
-        this.mockMvc.perform(delete("/feature-statuses/" + validFeatureStatusID))
+        this.mockMvc.perform(delete("/feature-statuses/" + validFeatureStatusID).with(csrf()))
                 .andExpect(status().is2xxSuccessful());
 
-        this.mockMvc.perform(delete("/feature-statuses/" + invalidFeatureStatusID))
+        this.mockMvc.perform(delete("/feature-statuses/" + invalidFeatureStatusID).with(csrf()))
                 .andExpect(status().is(400))
                 .andExpect(result -> assertInstanceOf(ConstraintViolationException.class, result.getResolvedException()));
 
-        this.mockMvc.perform(delete("/feature-statuses/" + nonExistentFeatureStatusID))
+        this.mockMvc.perform(delete("/feature-statuses/" + nonExistentFeatureStatusID).with(csrf()))
                 .andExpect(status().is(404))
                 .andExpect(result -> assertInstanceOf(ResourceNotFoundException.class, result.getResolvedException()));
     }

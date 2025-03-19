@@ -13,10 +13,12 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -52,6 +54,7 @@ class RolesTest {
     private final Role mockCreateRole = new Role(11, "Role 11");
 
     @Test
+    @WithMockUser()
     void getAllRoles() throws Exception {
         when(roleService.getAllRoles())
                 .thenReturn(mockRoles);
@@ -65,6 +68,7 @@ class RolesTest {
     }
 
     @Test
+    @WithMockUser()
     void createRole() throws Exception {
         when(roleService.createRole(mockCreateRole))
                 .thenReturn(mockCreateRole);
@@ -75,7 +79,7 @@ class RolesTest {
         Integer expectedCreatedRoleID = mockCreateRole.getRoleID();
         String expectedCreatedRoleName = mockCreateRole.getRoleName();
 
-        this.mockMvc.perform(post("/roles").contentType("application/json").content(roleJson))
+        this.mockMvc.perform(post("/roles").with(csrf()).contentType("application/json").content(roleJson))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.roleID", isA(Integer.class)))
@@ -85,6 +89,7 @@ class RolesTest {
     }
 
     @Test
+    @WithMockUser()
     void getRoleByID() throws Exception {
 
         final int validRoleID = 1;
@@ -115,6 +120,7 @@ class RolesTest {
     }
 
     @Test
+    @WithMockUser()
     void deleteRoleByID() throws Exception {
         final int validRoleID = 1;
         final int invalidRoleID = -1;
@@ -124,14 +130,14 @@ class RolesTest {
         Mockito.doThrow(ConstraintViolationException.class).when(roleService).deleteRole(invalidRoleID);
         Mockito.doThrow(ResourceNotFoundException.class).when(roleService).deleteRole(nonExistantRoleID);
 
-        this.mockMvc.perform(delete("/roles/" + validRoleID))
+        this.mockMvc.perform(delete("/roles/" + validRoleID).with(csrf()))
                 .andExpect(status().is2xxSuccessful());
 
-        this.mockMvc.perform(delete("/roles/" + invalidRoleID))
+        this.mockMvc.perform(delete("/roles/" + invalidRoleID).with(csrf()))
                 .andExpect(status().is(400))
                 .andExpect(result -> assertInstanceOf(ConstraintViolationException.class, result.getResolvedException()));
 
-        this.mockMvc.perform(delete("/roles/" + nonExistantRoleID))
+        this.mockMvc.perform(delete("/roles/" + nonExistantRoleID).with(csrf()))
                 .andExpect(status().is(404))
                 .andExpect(result -> assertInstanceOf(ResourceNotFoundException.class, result.getResolvedException()));
     }
