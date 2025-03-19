@@ -1,7 +1,6 @@
 package com.featuredoc.config;
 
 import com.featuredoc.filters.JwtAuthenticationFilter;
-import com.featuredoc.helpers.CustomAccessDeniedHandler;
 import com.featuredoc.models.User;
 import com.featuredoc.services.CustomOAuth2UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,10 +33,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.*;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -46,6 +43,7 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Enable method-level security
 public class SecurityConfig {
 
     @Autowired
@@ -71,11 +69,15 @@ public class SecurityConfig {
         return httpSecurity
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers(HttpMethod.DELETE, "/**").hasAnyAuthority("CAN_DELETE")
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(new AccessDeniedHandlerImpl()) // 403 for unauthorized
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            System.out.println(request);
+                            System.out.println(response);
+                            System.out.println(accessDeniedException.getMessage());
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                        })
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions

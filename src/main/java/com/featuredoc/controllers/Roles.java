@@ -5,6 +5,8 @@ import com.featuredoc.models.Role;
 import com.featuredoc.services.RoleService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +42,16 @@ public class Roles {
     }
 
     @DeleteMapping("/{roleID}")
-    public void deleteRoleByID(@PathVariable long roleID) {
-        roleService.deleteRole(roleID);
+    @PreAuthorize("hasRole('CAN_DELETE')")
+    public ResponseEntity deleteRoleByID(@PathVariable("roleID") long roleID) {
+        try {
+            System.out.println("reached roles delete");
+            roleService.deleteRole(roleID);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }

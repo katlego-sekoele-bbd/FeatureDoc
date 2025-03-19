@@ -5,6 +5,7 @@ import com.featuredoc.models.User;
 import com.featuredoc.models.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,10 +14,7 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -56,7 +54,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String accessToken = userRequest.getAccessToken().getTokenValue();
 
-        Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) oauth2User.getAuthorities();
+        var authorities = oauth2User.getAuthorities();
+        List<GrantedAuthority> mutableAuthorities = new ArrayList<>(authorities);
+
 
         // Optionally, map more custom attributes or assign roles here
         List<Integer> deletePermittedRoleIDs = Stream.of(env.getProperty("CAN_DELETE").split(",")).map(Integer::valueOf).toList();
@@ -64,13 +64,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         boolean canDelete = userRoles.stream().anyMatch(userRole -> deletePermittedRoleIDs.contains(userRole.getId().getRoleID()));
 
         if (canDelete) {
-             authorities.add(new SimpleGrantedAuthority("CAN_DELETE"));
+            mutableAuthorities.add(new SimpleGrantedAuthority("CAN_DELETE"));
          } else {
              // this type of user won't have any delete grants
          }
         // Here you can map additional attributes or roles if needed
         // For example, you can assign authorities (roles) to the user.
-        return new CustomOAuth2User(user, authorities);
+        return new CustomOAuth2User(user, mutableAuthorities);
     }
 
 //    public void storeAccessToken(Long userId, String accessToken) {
