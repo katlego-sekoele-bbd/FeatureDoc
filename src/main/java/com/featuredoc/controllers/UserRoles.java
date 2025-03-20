@@ -19,7 +19,7 @@ public class UserRoles {
     @Autowired
     private UserRoleService userRoleService;
     @GetMapping("/user/{userID}")
-    public ResponseEntity<List<UserRole>> getRolesByUserId(@PathVariable Integer userID) {
+    public ResponseEntity<List<UserRole>> getRolesByUserId(@PathVariable Long userID) {
         List<UserRole> userRoles = userRoleService.getRolesByUserId(userID);
         return ResponseEntity.ok(userRoles); 
     }
