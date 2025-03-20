@@ -13,5 +13,5 @@ import org.springframework.data.repository.query.Param;
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> {
     // Custom query methods can be added here if needed
      @Query("SELECT ur FROM UserRole ur WHERE ur.id.userID = :userID")
-    List<UserRole> findUserRoles(@Param("userID") Integer userID);
+    List<UserRole> findUserRoles(@Param("userID") Long userID);
 }
