@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.Customizer;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,7 +31,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,15 +58,25 @@ public class SecurityConfig {
 
     @Bean
     public SecretKey secretKey() {
-        return Jwts.SIG.HS256.key().build(); // Generate a secure key
+        return Jwts.SIG.HS256.key().build();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
                         (auth -> auth
+                                .requestMatchers(HttpMethod.GET).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.POST).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.PUT).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.PATCH).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.DELETE).hasRole("CAN_DELETE")
                                 .requestMatchers("/auth/token").permitAll()
                                 .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.getWriter().write("You are not authorized to access this endpoint");
+                        }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .oauth2Login(oauth2Login -> oauth2Login
@@ -94,12 +104,12 @@ public class SecurityConfig {
 
             String accessToken = client.getAccessToken().getTokenValue();
 
-            String jwtToken = jwt.generateJwtToken(accessToken);
+            String jwtToken = jwt.generateJwtToken(accessToken, email, token.getAuthorities());
 
             Map<String, String> responseData = new HashMap<>();
             responseData.put("status", "success");
             responseData.put("message", email + " logged in successfully");
-            responseData.put("access_token", jwtToken);  // Include the JWT token in the response
+            responseData.put("access_token", jwtToken);
 
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
             response.setContentType("application/json");
@@ -108,7 +118,7 @@ public class SecurityConfig {
             try {
                 objectMapper.writeValue(response.getWriter(), responseData);
             } catch (IOException e) {
-                e.printStackTrace(); // Handle the exception properly in production code
+                e.printStackTrace();
             }
         };
     }
@@ -121,7 +131,7 @@ public class SecurityConfig {
             responseData.put("message", "Login failed");
             responseData.put("error", authentication.getMessage());
 
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
             response.setContentType("application/json");
 
@@ -129,7 +139,7 @@ public class SecurityConfig {
             try {
                 objectMapper.writeValue(response.getWriter(), responseData);
             } catch (IOException e) {
-                e.printStackTrace(); // Handle the exception properly in production code
+                e.printStackTrace();
             }
         };
     }
