@@ -13,8 +13,8 @@ public class Feature {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer featureID;
-    private @NonNull Integer createdBy;
+    private Long featureID;
+    private @NonNull Long createdBy;
     @Column(updatable = false, insertable = false)
     private Timestamp createdAt;
 }

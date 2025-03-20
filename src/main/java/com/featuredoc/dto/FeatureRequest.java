@@ -7,23 +7,23 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FeatureRequest {
-    private Integer createdBy;
-    private Integer featureID;
-    private Integer updatedBy;
+    private Long createdBy;
+    private Long featureID;
+    private Long updatedBy;
     private Integer featureStatusID;
     private Integer priorityID;
-    private Integer assignedTo;
+    private Long assignedTo;
     private String name;
 
-    public Integer getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public Integer getFeatureID() {
+    public Long getFeatureID() {
         return featureID;
     }
 
-    public Integer getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
@@ -35,7 +35,7 @@ public class FeatureRequest {
         return priorityID;
     }
 
-    public Integer getAssignedTo() {
+    public Long getAssignedTo() {
         return assignedTo;
     }
 
