@@ -14,4 +14,14 @@ public class UserRoleId implements Serializable {
 
     private Integer roleID;
     private Integer userID;
+
+    public Integer getUserID() {
+        return userID;
+    }
+
+    public Integer getRoleID() {
+        return roleID;
+    }
+
 }
+

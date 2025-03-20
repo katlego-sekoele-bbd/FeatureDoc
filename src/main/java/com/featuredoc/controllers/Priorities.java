@@ -5,6 +5,7 @@ import com.featuredoc.models.Priority;
 import com.featuredoc.services.PriorityService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,8 +48,13 @@ public class Priorities {
             @Min(value = 1, message = "priorityID must be a positive integer")
             long priorityID
     ) {
-        priorityService.deletePriorityById(priorityID);
-        return ResponseEntity.noContent().build();
+        try {
+            priorityService.deletePriorityById(priorityID);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Delete Failed");
+        }
+
     }
 
 }

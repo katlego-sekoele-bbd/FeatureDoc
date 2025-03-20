@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -63,8 +65,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
                         (auth -> auth
+                                .requestMatchers(HttpMethod.GET).hasAnyRole("CAN_DELETE", "CANT_DELETE") // GET /users/** for USER or ADMIN
+                                .requestMatchers(HttpMethod.POST).hasAnyRole("CAN_DELETE", "CANT_DELETE") // POST /users only for ADMIN
+                                .requestMatchers(HttpMethod.PUT).hasAnyRole("CAN_DELETE", "CANT_DELETE") // PUT /users/{id} only for ADMIN
+                                .requestMatchers(HttpMethod.PATCH).hasAnyRole("CAN_DELETE", "CANT_DELETE") // PATCH /users/{id} only for ADMIN
+                                .requestMatchers(HttpMethod.DELETE).hasRole("CAN_DELETE") // DELETE /users/{id} only for ADMIN
                                 .requestMatchers("/auth/token").permitAll()
                                 .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.getWriter().write("You are not authorized to access this endpoint");
+                        }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .oauth2Login(oauth2Login -> oauth2Login
@@ -92,7 +104,7 @@ public class SecurityConfig {
 
             String accessToken = client.getAccessToken().getTokenValue();
 
-            String jwtToken = jwt.generateJwtToken(accessToken, email);
+            String jwtToken = jwt.generateJwtToken(accessToken, email, token.getAuthorities());
 
             Map<String, String> responseData = new HashMap<>();
             responseData.put("status", "success");
