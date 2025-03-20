@@ -53,7 +53,8 @@ public class FeatureService {
                 request.getURL());
                 featureVersionRepository.save(featureVersion);
             List<String> recipients = emailNotificationService.getNotificationRecipients(featureVersion .getAssignedTo(),null);
-            emailNotificationService.sendUpdateEmail(request, featureVersion, priority, featureStatus, recipients);
+            User user = userService.getUserById(request.getAssignedTo()).get();
+            emailNotificationService.sendUpdateEmail(request, featureVersion, priority, featureStatus, recipients, user);
                 return feature;
         }
 
@@ -94,7 +95,20 @@ public class FeatureService {
 
         }
 
-        private FeatureStatus getFeatureStatus(Integer featureStatusID) {
+    private User getFeaturePriority(Integer priorityID) {
+        if (priorityID == null) {
+            return null;
+
+        } else {
+            return priorityService.getPriorityById(priorityID).orElseThrow(
+                    () -> new RuntimeException("Priority not found for ID: " + priorityID));
+
+        }
+
+    }
+
+
+    private FeatureStatus getFeatureStatus(Integer featureStatusID) {
                 if (featureStatusID == null)
                         return null;
                 return featureStatusService.getFeatureStatusById(featureStatusID)
