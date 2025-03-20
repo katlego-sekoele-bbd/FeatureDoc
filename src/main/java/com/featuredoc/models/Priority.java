@@ -12,13 +12,6 @@ import lombok.*;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Priority {
-    public Integer getPriorityID() {
-        return priorityID;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer priorityID;

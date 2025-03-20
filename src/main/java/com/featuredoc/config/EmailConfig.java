@@ -17,7 +17,7 @@ public class EmailConfig {
         mailSender.setPort(465);
 
         mailSender.setUsername("featuredoc@stocktally.co.za");
-        mailSender.setPassword("FeatureDoc123");
+        mailSender.setPassword("EnterPasswordHere");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
