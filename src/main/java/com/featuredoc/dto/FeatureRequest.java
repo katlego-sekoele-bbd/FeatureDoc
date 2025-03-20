@@ -1,13 +1,11 @@
 package com.featuredoc.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public class FeatureRequest {
     private Integer createdBy;
     private Integer featureID;

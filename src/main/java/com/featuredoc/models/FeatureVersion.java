@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class FeatureVersion {
 
     @Id

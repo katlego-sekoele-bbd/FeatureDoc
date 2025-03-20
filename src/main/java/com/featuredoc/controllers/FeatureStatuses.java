@@ -2,6 +2,7 @@ package com.featuredoc.controllers;
 
 import com.featuredoc.exceptions.ResourceNotFoundException;
 import com.featuredoc.models.FeatureStatus;
+import com.featuredoc.models.Priority;
 import com.featuredoc.services.FeatureStatusService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,17 +32,17 @@ public class FeatureStatuses {
     }
 
     @GetMapping("/{featureStatusID}")
-    public FeatureStatus getFeatureStatusByID(
+    public FeatureStatus getPriorityById(
             @PathVariable("featureStatusID")
             @Min(value = 1, message = "featureStatusID must be a positive integer")
-            long featureStatusID
-    ) {
+            long featureStatusID)
+    {
         return featureStatusService.getFeatureStatusById(featureStatusID)
                 .orElseThrow(() -> new ResourceNotFoundException("FeatureStatus", "featureStatusID", featureStatusID));
     }
 
     @DeleteMapping("/{featureStatusID}")
-    public ResponseEntity<Object> deleteFeatureStatusByID(
+    public ResponseEntity<Object> deletePriorityById(
             @PathVariable("featureStatusID")
             @Min(value = 1, message = "featureStatusID must be a positive integer")
             long featureStatusID
