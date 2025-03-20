@@ -40,7 +40,7 @@ public class Roles {
     }
 
     @DeleteMapping("/{roleID}")
-    public void deleteRoleByID(@PathVariable("roleID") long roleID) {
+    public void deleteRoleByID(@PathVariable long roleID) {
         roleService.deleteRole(roleID);
     }
 
