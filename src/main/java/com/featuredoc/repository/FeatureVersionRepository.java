@@ -13,5 +13,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FeatureVersionRepository extends JpaRepository<FeatureVersion, Integer> {
     @Query("SELECT fv FROM FeatureVersion fv WHERE fv.featureID = :featureID ORDER BY fv.featureVersionID DESC LIMIT 1")
-    Optional<FeatureVersion> getLatestVersionByFeatureId(@Param("featureID") Long featureID);
+    Optional<FeatureVersion> getLatestVersionByFeatureId(@Param("featureID") Integer featureID);
 }

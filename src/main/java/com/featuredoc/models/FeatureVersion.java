@@ -13,28 +13,32 @@ public class FeatureVersion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long featureVersionID;
+    private Integer featureVersionID;
 
-    private @NonNull Long updateBy;
-    private @NonNull Long featureID;
+    private @NonNull Integer updateBy;
+    private @NonNull Integer featureID;
     private @NonNull Integer featureStatusID;
     private @NonNull Integer priorityID;
-    private @NonNull Long assignedTo;
+    private @NonNull Integer assignedTo;
     private @NonNull String name;
     private @NonNull String shortDescription;
 
     @Column(updatable = false, insertable = false)
     private Timestamp updatedDate;
 
-    public Long getFeatureVersionID() {
+    private Timestamp deletedDate;
+
+    private @NonNull String URL;
+
+    public Integer getFeatureVersionID() {
         return featureVersionID;
     }
 
-    public Long getUpdateBy() {
+    public Integer getUpdateBy() {
         return updateBy;
     }
 
-    public Long getFeatureID() {
+    public Integer getFeatureID() {
         return featureID;
     }
 
@@ -46,7 +50,7 @@ public class FeatureVersion {
         return priorityID;
     }
 
-    public Long getAssignedTo() {
+    public Integer getAssignedTo() {
         return assignedTo;
     }
 
@@ -69,11 +73,5 @@ public class FeatureVersion {
     public String getURL() {
         return URL;
     }
-
-    private Timestamp deletedDate;
-
-    private @NonNull String URL;
-
-
 
 }
