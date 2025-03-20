@@ -55,10 +55,7 @@ public class AuthController {
     public void getToken(
             @RequestParam("code") String code,
             HttpServletResponse response) throws IOException {
-
-        // Step 1: Exchange the authorization code for an access token
         String accessToken = exchangeCodeForAccessToken(code);
-
         if (accessToken == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("Failed to exchange code for access token");
