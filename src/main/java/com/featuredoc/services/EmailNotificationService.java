@@ -46,7 +46,7 @@ public class EmailNotificationService {
         user.ifPresent(u -> recipients.add(u.getEmail()));
     }
 
-    public void sendUpdateEmail(FeatureRequest request, FeatureVersion newVersion, Priority priority, FeatureStatus featureStatus, List<String> recipients, User user) {
+    public void sendUpdateEmail(FeatureRequest request, FeatureVersion newVersion, Priority priority, FeatureStatus featureStatus, List<String> recipients) {
         if (recipients.isEmpty()) {
             return; // No recipients to notify
         }
@@ -66,7 +66,7 @@ public class EmailNotificationService {
             emailContent.append("Priority: ").append(priorityDescription).append("\n");
         }
         if (request.getAssignedTo() != null) {
-            emailContent.append("Assigned To: ").append(user.getName()).append("\n");
+            emailContent.append("Assigned To: ").append(newVersion.getAssignedTo()).append("\n");
         }
         if (request.getName() != null) {
             emailContent.append("Name: ").append(newVersion.getName()).append("\n");
