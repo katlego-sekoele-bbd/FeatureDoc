@@ -64,12 +64,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
                         (auth -> auth
+                                .requestMatchers("/auth/token/**").permitAll()
                                 .requestMatchers(HttpMethod.GET).hasAnyRole("CAN_DELETE", "CANT_DELETE")
                                 .requestMatchers(HttpMethod.POST).hasAnyRole("CAN_DELETE", "CANT_DELETE")
                                 .requestMatchers(HttpMethod.PUT).hasAnyRole("CAN_DELETE", "CANT_DELETE")
                                 .requestMatchers(HttpMethod.PATCH).hasAnyRole("CAN_DELETE", "CANT_DELETE")
                                 .requestMatchers(HttpMethod.DELETE).hasRole("CAN_DELETE")
-                                .requestMatchers("/auth/token").permitAll()
                                 .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
