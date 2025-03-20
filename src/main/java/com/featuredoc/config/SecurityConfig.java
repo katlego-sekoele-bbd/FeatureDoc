@@ -30,7 +30,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,18 +57,18 @@ public class SecurityConfig {
 
     @Bean
     public SecretKey secretKey() {
-        return Jwts.SIG.HS256.key().build(); // Generate a secure key
+        return Jwts.SIG.HS256.key().build();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests
                         (auth -> auth
-                                .requestMatchers(HttpMethod.GET).hasAnyRole("CAN_DELETE", "CANT_DELETE") // GET /users/** for USER or ADMIN
-                                .requestMatchers(HttpMethod.POST).hasAnyRole("CAN_DELETE", "CANT_DELETE") // POST /users only for ADMIN
-                                .requestMatchers(HttpMethod.PUT).hasAnyRole("CAN_DELETE", "CANT_DELETE") // PUT /users/{id} only for ADMIN
-                                .requestMatchers(HttpMethod.PATCH).hasAnyRole("CAN_DELETE", "CANT_DELETE") // PATCH /users/{id} only for ADMIN
-                                .requestMatchers(HttpMethod.DELETE).hasRole("CAN_DELETE") // DELETE /users/{id} only for ADMIN
+                                .requestMatchers(HttpMethod.GET).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.POST).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.PUT).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.PATCH).hasAnyRole("CAN_DELETE", "CANT_DELETE")
+                                .requestMatchers(HttpMethod.DELETE).hasRole("CAN_DELETE")
                                 .requestMatchers("/auth/token").permitAll()
                                 .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
@@ -109,7 +108,7 @@ public class SecurityConfig {
             Map<String, String> responseData = new HashMap<>();
             responseData.put("status", "success");
             responseData.put("message", email + " logged in successfully");
-            responseData.put("access_token", jwtToken);  // Include the JWT token in the response
+            responseData.put("access_token", jwtToken);
 
             response.setStatus(HttpServletResponse.SC_ACCEPTED);
             response.setContentType("application/json");
@@ -118,7 +117,7 @@ public class SecurityConfig {
             try {
                 objectMapper.writeValue(response.getWriter(), responseData);
             } catch (IOException e) {
-                e.printStackTrace(); // Handle the exception properly in production code
+                e.printStackTrace();
             }
         };
     }
@@ -131,7 +130,7 @@ public class SecurityConfig {
             responseData.put("message", "Login failed");
             responseData.put("error", authentication.getMessage());
 
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
             response.setContentType("application/json");
 
@@ -139,7 +138,7 @@ public class SecurityConfig {
             try {
                 objectMapper.writeValue(response.getWriter(), responseData);
             } catch (IOException e) {
-                e.printStackTrace(); // Handle the exception properly in production code
+                e.printStackTrace();
             }
         };
     }
