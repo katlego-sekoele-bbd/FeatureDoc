@@ -2,9 +2,6 @@ package com.featuredoc.services;
 
 import com.featuredoc.models.CustomOAuth2User;
 import com.featuredoc.models.User;
-import com.featuredoc.models.UserRole;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,16 +10,14 @@ import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserService userService;
-
-    @Autowired
-    private UserRoleService userRoleService;
 
     public CustomOAuth2UserService(UserService userService) {
         this.userService = userService;
@@ -48,22 +43,25 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user = userService.createUser(new User(name+ " "+ surname, email));
         }
 
-        List<Integer> deletePermittedRoleIDs = List.of(3,4,6,8,9);
-
-        List<UserRole> userRoles = userRoleService.getRolesByUserId(user.getUserID());
-        boolean canDelete = userRoles.stream().anyMatch(userRole -> deletePermittedRoleIDs.contains(userRole.getId().getRoleID()));
+        String accessToken = userRequest.getAccessToken().getTokenValue();
 
         Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) oauth2User.getAuthorities();
-        List<GrantedAuthority> mutableAuthorities = new ArrayList<>(authorities);
 
-         if (canDelete) {
-             mutableAuthorities.add(new SimpleGrantedAuthority("ROLE_CAN_DELETE"));
-         }
-         else {
-             mutableAuthorities.add(new SimpleGrantedAuthority("ROLE_CANT_DELETE"));
-         }
-
-        return new CustomOAuth2User(user, mutableAuthorities);
+        // Optionally, map more custom attributes or assign roles here
+        // For example, you could add a custom role like this:
+        // if (user.getEmail().endsWith("@admin.com")) {
+        //     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        // }
+        // Here you can map additional attributes or roles if needed
+        // For example, you can assign authorities (roles) to the user.
+        return new CustomOAuth2User(user, authorities);
     }
+
+//    public void storeAccessToken(Long userId, String accessToken) {
+//        // Example: Store token securely in your database
+//        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+//        user.setAccessToken(accessToken);
+//        userRepository.save(user);
+//    }
 
 }

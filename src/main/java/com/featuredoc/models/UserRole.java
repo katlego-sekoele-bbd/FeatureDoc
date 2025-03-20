@@ -15,8 +15,4 @@ public class UserRole {
     public void setId(UserRoleId userRoleId) {
         this.id = userRoleId;
     }
-
-    public UserRoleId getId() {
-        return this.id;
-    }
 }
