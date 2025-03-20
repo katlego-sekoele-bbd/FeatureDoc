@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -73,7 +74,7 @@ public class AuthController {
             return;
         }
         // Step 3: Generate a JWT token
-        String jwtToken = generateJwtToken(accessToken, oauth2User.getAttribute("email"));
+        String jwtToken = generateJwtToken(accessToken, oauth2User.getAttribute("email"), oauth2User.getAuthorities());
 
         // Step 4: Return the JWT token to the client
         Map<String, String> responseData = new HashMap<>();
@@ -132,19 +133,20 @@ public class AuthController {
         return customOAuth2UserService.loadUser(userRequest);
     }
 
-    public String generateJwtToken(String accessToken, String email) {
+    public String generateJwtToken(String accessToken, String email, Collection<? extends GrantedAuthority> authorities) {
         // Create the JWT claims
 
-        Map<String, String> claims = new HashMap<>();
-
-        claims.put("access_token", accessToken);
-        claims.put("email", email);
+        List<String> roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
 
         return Jwts.builder()
-                .claims(claims)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
-                .signWith(secretKey) // Use your secret key
-                .compact();
+                .claim("access_token", accessToken)
+                .claim("email", email) // Include email
+                .claim("roles", roles)// You can include the OAuth2 access token as a claim
+                .issuedAt(new Date()) // Set issue time
+                .expiration(new Date(System.currentTimeMillis() + 3600000)) // Set expiration (1 hour from now)
+                .signWith(secretKey)
+                .compact(); // Create the JWT token string
     }
 }
