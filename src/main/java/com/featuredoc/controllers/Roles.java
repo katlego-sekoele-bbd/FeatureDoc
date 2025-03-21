@@ -1,6 +1,5 @@
 package com.featuredoc.controllers;
 
-import com.featuredoc.exceptions.ResourceNotFoundException;
 import com.featuredoc.models.Role;
 import com.featuredoc.services.RoleService;
 import jakarta.validation.constraints.Min;
@@ -12,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/roles")
-@CrossOrigin
 @Validated
 public class Roles {
 
@@ -36,7 +34,7 @@ public class Roles {
             long roleID
     ) {
         return roleService.getRoleById(roleID)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Could not find role roleID=%s", roleID)));
+                .orElse(new Role());
     }
 
     @DeleteMapping("/{roleID}")
