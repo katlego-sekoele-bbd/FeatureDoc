@@ -14,7 +14,7 @@ public class UserRoleService {
 
     @Autowired
     private UserRoleRepository userRoleRepository;
-    public List<UserRole> getRolesByUserId(Integer userID) {
+    public List<UserRole> getRolesByUserId(Long userID) {
         return userRoleRepository.findUserRoles(userID);
     }
     public UserRole addUserRole(UserRoleId userRoleId) {
