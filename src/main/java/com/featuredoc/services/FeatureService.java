@@ -4,6 +4,7 @@ import com.featuredoc.dto.FeatureRequest;
 import com.featuredoc.models.*;
 import com.featuredoc.repository.FeatureRepository;
 import com.featuredoc.repository.FeatureVersionRepository;
+import jakarta.validation.ConstraintViolationException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ public class FeatureService {
         private UserService userService;
 
         @Autowired
+        private FeatureViewService Service;
+
+        @Autowired
         FeatureStatusService featureStatusService;
 
         @Autowired
@@ -35,26 +39,29 @@ public class FeatureService {
         @Autowired
         private EmailNotificationService emailNotificationService;
 
-    @Transactional
-    public Feature addFeature(FeatureRequest request) {
-        User currentlyLoggedInUser = userService.getCurrentUser();
-        Feature feature = new Feature(currentlyLoggedInUser.getUserID());
-        feature = featureRepository.save(feature);
-            Priority priority = getFeaturePriority(request.getPriorityID());
-            FeatureStatus featureStatus = getFeatureStatus(request.getFeatureStatusID());
-        FeatureVersion featureVersion = new FeatureVersion(
-                currentlyLoggedInUser.getUserID(),
-                feature.getFeatureID(),
-                request.getFeatureStatusID(),
-                request.getPriorityID(),
-                request.getAssignedTo(),
-                request.getName(),
-                request.getShortDescription(),
-                request.getURL());
+        @Transactional
+        public Feature addFeature(FeatureRequest request) {
+                User currentlyLoggedInUser = userService.getCurrentUser();
+                Feature feature = new Feature(currentlyLoggedInUser.getUserID());
+                feature = featureRepository.save(feature);
+                FeatureStatus featureStatus = getFeatureStatus(request.getFeatureStatusID());
+                Priority priority = getFeaturePriority(request.getPriorityID());
+                User assignedTo = validateAssignedTo(request.getAssignedTo());
+                FeatureVersion featureVersion = new FeatureVersion(
+                                currentlyLoggedInUser.getUserID(),
+                                feature.getFeatureID(),
+                                request.getFeatureStatusID(),
+                                request.getPriorityID(),
+                                assignedTo != null ? assignedTo.getUserID() : null,
+                                request.getName(),
+                                request.getShortDescription(),
+                                request.getURL());
                 featureVersionRepository.save(featureVersion);
-            List<String> recipients = emailNotificationService.getNotificationRecipients(featureVersion .getAssignedTo(),null);
-            User user = userService.getUserById(request.getAssignedTo()).get();
-            emailNotificationService.sendUpdateEmail(request, featureVersion, priority, featureStatus, recipients, user);
+                List<String> recipients = emailNotificationService
+                                .getNotificationRecipients(featureVersion.getAssignedTo(), null);
+                User user = userService.getUserById(request.getAssignedTo()).get();
+                emailNotificationService.sendUpdateEmail(request, featureVersion, priority, featureStatus, recipients,
+                                user);
                 return feature;
         }
 
@@ -70,54 +77,58 @@ public class FeatureService {
                 return featureVersionRepository.save(newVersion);
         }
 
-        private void validateRequest(FeatureRequest request) {
-                if (request == null) {
-                        throw new IllegalArgumentException("FeatureRequest cannot be null");
-                } else {
-                        // body is not empty
-                }
-        }
-
         private FeatureVersion getLatestFeatureVersion(Long featureID) throws BadRequestException {
                 return featureVersionService.getLatestFeatureVersionByFeatureId(featureID)
-                                .orElseThrow(() -> new BadRequestException(
+                                .orElseThrow(() -> new IllegalArgumentException(
                                                 "No previous version found for Feature ID: " + featureID));
         }
 
         private Priority getFeaturePriority(Integer priorityID) {
                 if (priorityID == null) {
                         return null;
-
                 } else {
-                        return priorityService.getPriorityById(priorityID).orElseThrow(
-                                        () -> new RuntimeException("Priority not found for ID: " + priorityID));
-
+                        return priorityService.getPriorityById(priorityID)
+                                        .orElseThrow(() -> new IllegalArgumentException(
+                                                        "Priority not found for ID: " + priorityID));
                 }
+        }
 
+        private User validateAssignedTo(Long userID) {
+
+                if (userID == null) {
+                        return null;
+                } else {
+                        return userService.getUserById(userID)
+                                        .orElseThrow(() -> new IllegalArgumentException(
+                                                        "No user found for given assignedTo ID "
+                                                                        + userID));
+                }
         }
 
         private FeatureStatus getFeatureStatus(Integer featureStatusID) {
                 if (featureStatusID == null)
                         return null;
                 return featureStatusService.getFeatureStatusById(featureStatusID)
-                                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new IllegalArgumentException(
                                                 "FeatureStatus not found for ID: " + featureStatusID));
         }
 
         private FeatureVersion createNewFeatureVersion(FeatureRequest request, FeatureVersion latestFeatureVersion) {
                 User currentlyLoggedInUser = userService.getCurrentUser();
-        FeatureVersion newVersion = new FeatureVersion(
-                currentlyLoggedInUser.getUserID(),
-                request.getFeatureID(),
-                request.getFeatureStatusID() != null ? request.getFeatureStatusID()
-                        : latestFeatureVersion.getFeatureStatusID(),
-                request.getPriorityID() != null ? request.getPriorityID() : latestFeatureVersion.getPriorityID(),
-                request.getAssignedTo() != null ? request.getAssignedTo() : latestFeatureVersion.getAssignedTo(),
-                request.getName() != null ? request.getName() : latestFeatureVersion.getName(),
-                request.getShortDescription() != null ? request.getShortDescription()
-                        : latestFeatureVersion.getShortDescription(),
-                request.getURL() != null ? request.getURL() : latestFeatureVersion.getURL());
-        return featureVersionRepository.save(newVersion);
-    }
+                FeatureVersion newVersion = new FeatureVersion(
+                                currentlyLoggedInUser.getUserID(),
+                                request.getFeatureID(),
+                                request.getFeatureStatusID() != null ? request.getFeatureStatusID()
+                                                : latestFeatureVersion.getFeatureStatusID(),
+                                request.getPriorityID() != null ? request.getPriorityID()
+                                                : latestFeatureVersion.getPriorityID(),
+                                request.getAssignedTo() != null ? request.getAssignedTo()
+                                                : latestFeatureVersion.getAssignedTo(),
+                                request.getName() != null ? request.getName() : latestFeatureVersion.getName(),
+                                request.getShortDescription() != null ? request.getShortDescription()
+                                                : latestFeatureVersion.getShortDescription(),
+                                request.getURL() != null ? request.getURL() : latestFeatureVersion.getURL());
+                return featureVersionRepository.save(newVersion);
+        }
 }
 

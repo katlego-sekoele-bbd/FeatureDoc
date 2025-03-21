@@ -18,8 +18,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleValidationException(ValidationException ex) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", ex.getMessage());
-        errors.put("status", "400"); //TODO: @Katlego - we need a better way to build these errors
-        errors.put("trace", ex.getStackTrace().toString()); //TODO: @Katlego - we need to find a way to print the actual trace
+        errors.put("status", "400");
+        errors.put("trace", ex.getStackTrace().toString());
         errors.put("error", "Bad Request");
         errors.put("timestamp", LocalDateTime.now().toString());
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
@@ -50,6 +50,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
         Map<String, String> response = new HashMap<>();
         response.put("status", "error");
+        response.put("status", "400");
         response.put("message", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
