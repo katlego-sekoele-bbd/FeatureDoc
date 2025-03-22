@@ -61,18 +61,18 @@ jobs:
         # Stop any previously running server instance (if any)
           pkill -f "java -jar /home/ec2-user/server.jar" || true
         
-          export DATABASE_URL="$DATABASE_URL"
-          export DATABASE_USERNAME="$DATABASE_USERNAME"
-          export DATABASE_PASSWORD="$DATABASE_PASSWORD"
+          echo "export DATABASE_URL=\"$DATABASE_URL\"" | sudo tee -a /etc/profile
+          echo "export DATABASE_USERNAME=\"$DATABASE_USERNAME\"" | sudo tee -a /etc/profile
+          echo "export DATABASE_PASSWORD=\"$DATABASE_PASSWORD\"" | sudo tee -a /etc/profile
     
-          export EMAIL_HOST="$EMAIL_HOST"
-          export EMAIL_USERNAME="$EMAIL_USERNAME"
-          export EMAIL_PASSWORD="$EMAIL_PASSWORD"
-          export EMAIL_PORT="$EMAIL_PORT"
+          echo "export EMAIL_HOST=\"$EMAIL_HOST\"" | sudo tee -a /etc/profile
+          echo "export EMAIL_USERNAME=\"$EMAIL_USERNAME\"" | sudo tee -a /etc/profile
+          echo "export EMAIL_PASSWORD=\"$EMAIL_PASSWORD\"" | sudo tee -a /etc/profile
+          echo "export EMAIL_PORT=\"$EMAIL_PORT\"" | sudo tee -a /etc/profile
     
-          export GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
-          export GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET"
-          export GOOGLE_SCOPE="$GOOGLE_SCOPE"
+          echo "export GOOGLE_CLIENT_ID=\"$GOOGLE_CLIENT_ID\"" | sudo tee -a /etc/profile
+          echo "export GOOGLE_CLIENT_SECRET=\"$GOOGLE_CLIENT_SECRET\"" | sudo tee -a /etc/profile
+          echo "export GOOGLE_SCOPE=\"$GOOGLE_SCOPE\"" | sudo tee -a /etc/profile
           
           # Run the JAR file in the background and log output to server.log
           nohup java -jar /home/ec2-user/server.jar > /home/ec2-user/server.log 2>&1 &
