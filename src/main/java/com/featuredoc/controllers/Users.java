@@ -6,9 +6,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.featuredoc.models.User;
 import com.featuredoc.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/")
@@ -30,11 +33,13 @@ class Users {
         emailService.sendSimpleMessage("keith.hughes@bbd.co.za", "Test", "This is a test message");
     }
 
+    // Get a user by ID
     @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable("userID") Long userID) {
-        return userService.getUserById(userID).orElse(new User());
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+        Optional<User> user = userService.getUserById(id);
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-
 
     @PostMapping("/register")
     public String registerUser(@RequestBody User request) {
