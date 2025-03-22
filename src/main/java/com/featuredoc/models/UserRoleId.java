@@ -12,14 +12,14 @@ import lombok.*;
 @AllArgsConstructor
 public class UserRoleId implements Serializable {
 
-    private Integer roleID;
-    private Integer userID;
+    private Long roleID;
+    private Long userID;
 
-    public Integer getUserID() {
+    public Long getUserID() {
         return userID;
     }
 
-    public Integer getRoleID() {
+    public Long getRoleID() {
         return roleID;
     }
 
