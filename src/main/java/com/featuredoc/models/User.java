@@ -1,8 +1,10 @@
 package com.featuredoc.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 
 @Entity
+@AllArgsConstructor
 public class User {
 
 
