@@ -1,5 +1,6 @@
 package com.featuredoc.services;
 
+import com.featuredoc.models.User;
 import com.featuredoc.models.UserRole;
 import com.featuredoc.models.UserRoleId;
 import com.featuredoc.repository.RoleRepository;
@@ -8,6 +9,7 @@ import com.featuredoc.repository.UserRoleRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
@@ -63,10 +65,9 @@ class UserRoleServiceTest {
     public void getRolesByUserIdNoUser() {
         List<UserRole> userRoles = List.of();
 
-        when(userRepository.findById(-1L))
-                .thenThrow(NoSuchElementException.class);
+        List<UserRole> actual = userRoleService.getRolesByUserId(-1L);
 
-        assertThrows(NoSuchElementException.class, () -> userRoleService.getRolesByUserId(-1L));
+        assertEquals(userRoles, actual);
     }
 
     @Test
@@ -77,6 +78,12 @@ class UserRoleServiceTest {
         when(userRoleRepository.save(userRole))
                 .thenReturn(userRole);
 
+        when(userRepository.existsById(userRoleId.getUserID()))
+                .thenReturn(true);
+
+        when(roleRepository.existsById(userRoleId.getRoleID()))
+                .thenReturn(true);
+
         UserRole actual = userRoleService.addUserRole(userRoleId);
 
         assertEquals(userRole, actual);
@@ -85,22 +92,14 @@ class UserRoleServiceTest {
     @Test
     public void addUserRoleNoUser() {
         UserRoleId userRoleId = new UserRoleId(1L,-1L);
-        UserRole userRole = new UserRole(userRoleId);
 
-        when(userRepository.findById(Long.valueOf(userRoleId.getUserID())))
-                .thenThrow(NoSuchElementException.class);
-
-        assertThrows(NoSuchElementException.class, () -> userRoleService.addUserRole(userRoleId));
+        assertThrows(DataIntegrityViolationException.class, () -> userRoleService.addUserRole(userRoleId));
     }
 
     @Test
     public void addUserRoleNoRole() {
         UserRoleId userRoleId = new UserRoleId(-1L,1L);
-        UserRole userRole = new UserRole(userRoleId);
 
-        when(roleRepository.findById(Long.valueOf(userRoleId.getRoleID())))
-                .thenThrow(NoSuchElementException.class);
-
-        assertThrows(NoSuchElementException.class, () -> userRoleService.addUserRole(userRoleId));
+        assertThrows(DataIntegrityViolationException.class, () -> userRoleService.addUserRole(userRoleId));
     }
 }

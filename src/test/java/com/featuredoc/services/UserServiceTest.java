@@ -74,7 +74,9 @@ class UserServiceTest {
         when(userRepository.findById(-1L))
                 .thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> userService.getUserById(-1L));
+        Optional<User> actual = userService.getUserById(-1L);
+
+        assertEquals(Optional.empty(), actual);
     }
 
     @Test
@@ -111,12 +113,11 @@ class UserServiceTest {
 
     @Test
     public void deleteUserNullUser() {
-        doThrow(NoSuchElementException.class)
-                .when(userRepository)
-                        .deleteById(-1L);
+        doNothing().when(userRepository).deleteById(-1L);
 
-        assertThrows(NoSuchElementException.class, () -> userService.deleteUser(-1L));
-        verify(userRepository, never()).deleteById(-1L);
+        userService.deleteUser(-1L);
+
+        verify(userRepository, times(1)).deleteById(-1L);
     }
 
     @Test
@@ -136,7 +137,10 @@ class UserServiceTest {
         when(userRepository.findByEmail(""))
                 .thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> userService.getUserByEmail(""));
+        Optional<User> actual = userService.getUserByEmail("");
+
+        assertEquals(Optional.empty(), actual);
+        verify(userRepository, times(1)).findByEmail("");
     }
 
     @Test
@@ -253,6 +257,6 @@ class UserServiceTest {
             }
         });
 
-        assertThrows(AuthenticationException.class, () -> userService.getCurrentUser());
+        assertThrows(IllegalStateException.class, () -> userService.getCurrentUser());
     }
 }

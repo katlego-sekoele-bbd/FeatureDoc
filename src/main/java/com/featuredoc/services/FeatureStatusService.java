@@ -29,11 +29,7 @@ public class FeatureStatusService {
     }
 
     public void deleteFeatureStatusById(long featureStatusID) {
-        if (featureStatusRepository.existsById(featureStatusID)) {
-            featureStatusRepository.deleteById(featureStatusID);
-        } else {
-            throw new ResourceNotFoundException("FeatureStatus", "featureStatusID", featureStatusID);
-        }
+        featureStatusRepository.deleteById(featureStatusID);
     }
 
 }

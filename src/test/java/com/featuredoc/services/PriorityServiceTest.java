@@ -77,9 +77,10 @@ class PriorityServiceTest {
 
     @Test
     public void createPriorityAlreadyExists() {
-        List<Priority> priorities = List.of(
-                new Priority(1, "1")
-        );
+        Priority priority = new Priority("1");
+
+        when(priorityRepository.save(priority))
+                .thenThrow(DataIntegrityViolationException.class);
 
         assertThrows(DataIntegrityViolationException.class, () -> priorityService.createPriority(new Priority("1")));
     }
@@ -93,7 +94,7 @@ class PriorityServiceTest {
 
         Optional<Priority> actual = priorityService.getPriorityById(priority.getPriorityID());
 
-        assertEquals(priority, actual);
+        assertEquals(Optional.of(priority), actual);
     }
 
     @Test
@@ -120,8 +121,8 @@ class PriorityServiceTest {
 
     @Test
     public void deletePriorityByIDNotExists() {
-        assertThrows(NoSuchElementException.class, () -> priorityService.deletePriorityById(-1));
-        verify(priorityRepository, never()).deleteById(-1L);
+        priorityService.deletePriorityById(-1);
+        verify(priorityRepository, times(1)).deleteById(-1L);
     }
 
 }

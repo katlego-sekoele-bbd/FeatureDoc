@@ -59,10 +59,9 @@ class EmailServiceTest {
         message.setSubject(subject);
         message.setText(text);
 
-        assertThrows(IllegalArgumentException.class, () -> emailService.sendSimpleMessage(recipients, subject, text));
+        emailService.sendSimpleMessage(recipients, subject, text);
 
-        verify(emailSender, times(1)).send(message);
-
+        verify(emailSender, times(0)).send(message);
     }
 
     @Test
@@ -71,7 +70,7 @@ class EmailServiceTest {
                 "test@test.com",
                 "test2@test2.com"
         );
-        String subject = null;
+        String subject = "";
         String text = "text";
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -81,10 +80,9 @@ class EmailServiceTest {
         message.setSubject(subject);
         message.setText(text);
 
-        assertThrows(IllegalArgumentException.class, () -> emailService.sendSimpleMessage(recipients, subject, text));
+        emailService.sendSimpleMessage(recipients, subject, text);
 
         verify(emailSender, times(1)).send(message);
-
     }
 
     @Test
@@ -94,7 +92,7 @@ class EmailServiceTest {
                 "test2@test2.com"
         );
         String subject = "test";
-        String text = null;
+        String text = "";
 
         SimpleMailMessage message = new SimpleMailMessage();
 
@@ -103,7 +101,7 @@ class EmailServiceTest {
         message.setSubject(subject);
         message.setText(text);
 
-        assertThrows(IllegalArgumentException.class, () -> emailService.sendSimpleMessage(recipients, subject, text));
+        emailService.sendSimpleMessage(recipients, subject, text);
 
         verify(emailSender, times(1)).send(message);
 

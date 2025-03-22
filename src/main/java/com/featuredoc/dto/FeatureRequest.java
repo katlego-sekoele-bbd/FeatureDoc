@@ -1,13 +1,11 @@
 package com.featuredoc.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class FeatureRequest {
     private Long createdBy;
     private Long featureID;

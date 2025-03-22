@@ -69,6 +69,9 @@ class RoleServiceTest {
     public void createRoleNullRole() {
         Role role = null;
 
+        when(roleRepository.save(role))
+                .thenThrow(IllegalArgumentException.class);
+
         assertThrows(IllegalArgumentException.class, () -> roleService.createRole(role));
     }
 
@@ -78,6 +81,8 @@ class RoleServiceTest {
                 new Role(1, "1")
         );
         Role role = new Role("1");
+
+        when(roleRepository.save(role)).thenThrow(DataIntegrityViolationException.class);
 
         assertThrows(DataIntegrityViolationException.class, () -> roleService.createRole(role));
     }
@@ -114,10 +119,11 @@ class RoleServiceTest {
 
     @Test
     public void deleteRoleNotExist() {
-        doThrow(NoSuchElementException.class).when(roleRepository).deleteById(-1L);
+        doNothing().when(roleRepository).deleteById(-1L);
 
-        assertThrows(NoSuchElementException.class, () -> roleService.deleteRole(-1L));
-        verify(roleRepository, never()).deleteById(-1L);
+        roleService.deleteRole(-1L);
+
+        verify(roleRepository, times(1)).deleteById(-1L);
     }
 
 }

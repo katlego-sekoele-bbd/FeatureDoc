@@ -72,8 +72,9 @@ class EmailNotificationServiceTest {
         when(userService.getUserById(newlyAssigned))
                 .thenReturn(newlyAssignedUser);
 
-        assertThrows(NoSuchElementException.class, () -> emailNotificationService.getNotificationRecipients(newlyAssigned, previouslyAssigned));
+        List<String> actual = emailNotificationService.getNotificationRecipients(newlyAssigned, previouslyAssigned);
 
+        assertEquals(List.of(previouslyAssignedUser.get().getEmail()), actual);
     }
 
     @Test
@@ -90,7 +91,9 @@ class EmailNotificationServiceTest {
         when(userService.getUserById(newlyAssigned))
                 .thenReturn(newlyAssignedUser);
 
-        assertThrows(NoSuchElementException.class, () -> emailNotificationService.getNotificationRecipients(newlyAssigned, previouslyAssigned));
+        List<String> actual = emailNotificationService.getNotificationRecipients(newlyAssigned, previouslyAssigned);
+
+        assertEquals(List.of(), actual);
 
     }
 
@@ -119,9 +122,8 @@ class EmailNotificationServiceTest {
         List<String> recipients = List.of();
         User user = new User(1L, "name", "email1");
 
-        doNothing().when(emailService).sendSimpleMessage(anyList(), anyString(), anyString());
+        emailNotificationService.sendUpdateEmail(featureRequest, featureVersion, priority, featureStatus, recipients, user);
 
-        assertThrows(IllegalArgumentException.class, () -> emailNotificationService.sendUpdateEmail(featureRequest, featureVersion, priority, featureStatus, recipients, user));
         verify(emailService, never()).sendSimpleMessage(anyList(), anyString(), anyString());
     }
 

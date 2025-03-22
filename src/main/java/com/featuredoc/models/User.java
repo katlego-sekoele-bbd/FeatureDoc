@@ -3,6 +3,8 @@ package com.featuredoc.models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @AllArgsConstructor
 public class User {
@@ -50,4 +52,15 @@ public class User {
         this.email = email;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(getUserID(), user.getUserID()) && Objects.equals(getName(), user.getName()) && Objects.equals(getEmail(), user.getEmail());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUserID(), getName(), getEmail());
+    }
 }

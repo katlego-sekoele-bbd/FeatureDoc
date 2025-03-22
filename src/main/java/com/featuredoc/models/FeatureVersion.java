@@ -3,6 +3,7 @@ package com.featuredoc.models;
 import jakarta.persistence.*;
 import lombok.*;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 @Entity
 @Data
@@ -86,4 +87,15 @@ public class FeatureVersion {
 
     private String URL;
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        FeatureVersion that = (FeatureVersion) o;
+        return Objects.equals(getFeatureVersionID(), that.getFeatureVersionID()) && Objects.equals(getUpdateBy(), that.getUpdateBy()) && Objects.equals(getFeatureID(), that.getFeatureID()) && Objects.equals(getFeatureStatusID(), that.getFeatureStatusID()) && Objects.equals(getPriorityID(), that.getPriorityID()) && Objects.equals(getAssignedTo(), that.getAssignedTo()) && Objects.equals(getName(), that.getName()) && Objects.equals(getShortDescription(), that.getShortDescription()) && Objects.equals(getUpdatedDate(), that.getUpdatedDate()) && Objects.equals(getDeletedDate(), that.getDeletedDate()) && Objects.equals(getURL(), that.getURL());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFeatureVersionID(), getUpdateBy(), getFeatureID(), getFeatureStatusID(), getPriorityID(), getAssignedTo(), getName(), getShortDescription(), getUpdatedDate(), getDeletedDate(), getURL());
+    }
 }

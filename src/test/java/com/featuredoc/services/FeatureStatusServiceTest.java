@@ -1,5 +1,6 @@
 package com.featuredoc.services;
 
+import com.featuredoc.exceptions.ResourceNotFoundException;
 import com.featuredoc.models.FeatureStatus;
 import com.featuredoc.repository.FeatureStatusRepository;
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,9 @@ class FeatureStatusServiceTest {
     public void createFeatureStatusNoStatus() {
         final FeatureStatus featureStatus = null;
 
+        when(featureStatusRepository.save(featureStatus))
+                .thenThrow(IllegalArgumentException.class);
+
         assertThrows(IllegalArgumentException.class, () -> featureStatusService.createFeatureStatus(featureStatus));
     }
 
@@ -77,6 +81,9 @@ class FeatureStatusServiceTest {
         List<FeatureStatus> featureStatuses = List.of(
                 new FeatureStatus("status")
         );
+
+        when(featureStatusRepository.save(new FeatureStatus("status")))
+                .thenThrow(DataIntegrityViolationException.class);
 
         assertThrows(DataIntegrityViolationException.class, () -> featureStatusService.createFeatureStatus(new FeatureStatus("status")));
     }
@@ -115,7 +122,7 @@ class FeatureStatusServiceTest {
 
     @Test
     public void deleteFeatureStatusByIDNotExist() {
-        verify(featureStatusRepository, times(0)).deleteById(-1L);
-        assertThrows(NoSuchElementException.class, () -> featureStatusService.deleteFeatureStatusById(-1L));
+        featureStatusService.deleteFeatureStatusById(-1L);
+        verify(featureStatusRepository, times(1)).deleteById(-1L);
     }
 }
