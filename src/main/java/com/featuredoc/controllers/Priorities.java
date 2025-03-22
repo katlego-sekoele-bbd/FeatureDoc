@@ -1,5 +1,6 @@
 package com.featuredoc.controllers;
 
+import com.featuredoc.exceptions.ResourceNotFoundException;
 import com.featuredoc.models.Priority;
 import com.featuredoc.services.PriorityService;
 import jakarta.validation.constraints.Min;
@@ -10,9 +11,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/priorities")
+@CrossOrigin
 @Validated
 public class Priorities {
 
@@ -36,7 +39,7 @@ public class Priorities {
             long priorityID)
     {
         return priorityService.getPriorityById(priorityID)
-                .orElse(new Priority());
+                .orElseThrow(() -> new ResourceNotFoundException("Priority", "priorityID", priorityID));
     }
 
     @DeleteMapping("/{priorityID}")
