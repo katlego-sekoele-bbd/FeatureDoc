@@ -32,17 +32,45 @@ jobs:
     - name: Deploy to EC2
       env:
         PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+        DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+
+        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_SCOPE: ${{ secrets.GOOGLE_SCOPE }}
       run: |
         # Save SSH key
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
+
+        echo "export DATABASE_URL=\"$DATABASE_URL\"" | sudo tee -a environments
+        echo "export DATABASE_USERNAME=\"$DATABASE_USERNAME\"" | sudo tee -a environments
+        echo "export DATABASE_PASSWORD=\"$DATABASE_PASSWORD\"" | sudo tee -a environments
+        echo "export EMAIL_HOST=\"$EMAIL_HOST\"" | sudo tee -a environments
+        echo "export EMAIL_USERNAME=\"$EMAIL_USERNAME\"" | sudo tee -a environments
+        echo "export EMAIL_PASSWORD=\"$EMAIL_PASSWORD\"" | sudo tee -a environments
+        echo "export EMAIL_PORT=\"$EMAIL_PORT\"" | sudo tee -a environments
+        echo "export GOOGLE_CLIENT_ID=\"$GOOGLE_CLIENT_ID\"" | sudo tee -a environments
+        echo "export GOOGLE_CLIENT_SECRET=\"$GOOGLE_CLIENT_SECRET\"" | sudo tee -a environments
+        echo "export GOOGLE_SCOPE=\"$GOOGLE_SCOPE\"" | sudo tee -a environments
+        
         # Copy JAR to EC2
         scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com:/home/ec2-user/server.jar
+        scp -v -o StrictHostKeyChecking=no -i private_key.pem environments ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com:/home/ec2-user/environments
+
         # Connect and set up environment variables & run the server
-        ssh -i private_key.pem ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com << 'EOF'
+        ssh -i private_key.pem ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com /bin/bash << 'EOF'
           
         # Stop any previously running server instance (if any)
           pkill -f "java -jar /home/ec2-user/server.jar" || true
+          
+          source /home/ec2-user/environments
           
           # Run the JAR file in the background and log output to server.log
           nohup java -jar /home/ec2-user/server.jar > /home/ec2-user/server.log 2>&1 &

@@ -16,14 +16,26 @@ public class FeatureVersion {
 
     private @NonNull Long updateBy;
     private @NonNull Long featureID;
-    private @NonNull Integer featureStatusID;
-    private @NonNull Integer priorityID;
-    private @NonNull Long assignedTo;
+    private Integer featureStatusID;
+    private Integer priorityID;
+    private Long assignedTo;
     private @NonNull String name;
-    private @NonNull String shortDescription;
+    private String shortDescription;
 
     @Column(updatable = false, insertable = false)
     private Timestamp updatedDate;
+
+    public FeatureVersion(Long updateBy, Long featureID, Integer featureStatusID, Integer priorityID,
+            Long assignedTo, String name, String shortDescription, String URL) {
+        this.updateBy = updateBy;
+        this.featureID = featureID;
+        this.featureStatusID = featureStatusID;
+        this.priorityID = priorityID;
+        this.assignedTo = assignedTo;
+        this.name = name;
+        this.shortDescription = shortDescription;
+        this.URL = URL;
+    }
 
     public Long getFeatureVersionID() {
         return featureVersionID;
@@ -71,8 +83,6 @@ public class FeatureVersion {
 
     private Timestamp deletedDate;
 
-    private @NonNull String URL;
-
-
+    private String URL;
 
 }
