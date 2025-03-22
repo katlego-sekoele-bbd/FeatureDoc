@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -16,6 +17,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 public class AuthController {
@@ -26,10 +28,49 @@ public class AuthController {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String clientSecret;
 
+    @Value("${base-url}")
+    private String baseUrl;
+
+    @Value("${cli-client-google-redirect}")
+    private String cliRedirectURL;
+
+    private final String scope = URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
+
+
+    @GetMapping("/login")
+    public ResponseEntity<Void> initiateLogin() {
+        // Build the Google OAuth2 authorization URL
+        String authorizationUrl = UriComponentsBuilder
+                .fromUriString("https://accounts.google.com/o/oauth2/auth")
+                .queryParam("client_id", clientId)
+                .queryParam("redirect_uri", baseUrl + "/auth/token")
+                .queryParam("response_type", "code")
+                .queryParam("scope", "openid%20email%20profile")
+                .queryParam("access_type", "offline")
+                .queryParam("prompt", "consent")
+                .build()
+                .toUriString();
+
+        // Redirect the user to the Google OAuth2 authorization page
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(authorizationUrl))
+                .build();
+    }
+
+
     @GetMapping("/auth/token")
     public ResponseEntity<Map<String, String>> getToken(
-            @RequestParam("code") String code) throws Exception {
-        String accessToken = exchangeCodeForAccessToken(code);
+            @RequestParam("code") String code,
+            @RequestParam(name = "channel", required = false) String channel
+    ) throws Exception {
+
+        String redirectURI = baseUrl+"/auth/token";
+
+        if (Objects.equals(channel, "CLI")) {
+            redirectURI = cliRedirectURL;
+        }
+
+        String accessToken = exchangeCodeForAccessToken(code, redirectURI);
 
         if (accessToken == null) {
             return ResponseEntity
@@ -43,14 +84,14 @@ public class AuthController {
         return ResponseEntity.ok(responseData);
     }
 
-    private String exchangeCodeForAccessToken(String code) throws Exception {
+    private String exchangeCodeForAccessToken(String code, String redirectURI) throws Exception {
         String url = "https://oauth2.googleapis.com/token";
         ObjectMapper objectMapper = new ObjectMapper();
         String body =
                 "code=" + URLDecoder.decode(code, StandardCharsets.UTF_8) +
                         "&client_id=" + clientId +
                         "&client_secret=" + clientSecret +
-                        "&redirect_uri=" + "http://localhost:3000/login/oauth2/code/google" +
+                        "&redirect_uri=" + redirectURI +
                         "&grant_type=authorization_code" +
                         "&scope=openid%20email%20profile";
 
@@ -68,19 +109,5 @@ public class AuthController {
 
         return map.get("id_token");
     }
-
-//    private OAuth2User loadUser(String accessToken) {
-//        // Create an OAuth2UserRequest with the access token
-//        ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId("google");
-//        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, new OAuth2AccessToken(
-//                OAuth2AccessToken.TokenType.BEARER,
-//                accessToken,
-//                null,
-//                null
-//        ));
-//
-//        // Load the user details using the custom OAuth2UserService
-//        return customOAuth2UserService.loadUser(userRequest);
-//    }
 
 }
