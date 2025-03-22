@@ -5,6 +5,7 @@ import com.featuredoc.repository.FeatureStatusRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.verification.VerificationMode;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -104,13 +105,17 @@ class FeatureStatusServiceTest {
     public void deleteFeatureStatusByIDBestCase() {
         final Optional<FeatureStatus> featureStatus = Optional.of(new FeatureStatus(1, "1"));
 
+        when(featureStatusRepository.existsById(Long.valueOf(featureStatus.get().getFeatureStatusID())))
+                .thenReturn(true);
         doNothing().when(featureStatusRepository).deleteById(Long.valueOf(featureStatus.get().getFeatureStatusID()));
 
-        assertDoesNotThrow(() -> featureStatusService.deleteFeatureStatusById(featureStatus.get().getFeatureStatusID()));
+        featureStatusService.deleteFeatureStatusById(Long.valueOf(featureStatus.get().getFeatureStatusID()));
+        verify(featureStatusRepository, times(1)).deleteById(Long.valueOf(featureStatus.get().getFeatureStatusID()));
     }
 
     @Test
     public void deleteFeatureStatusByIDNotExist() {
+        verify(featureStatusRepository, times(0)).deleteById(-1L);
         assertThrows(NoSuchElementException.class, () -> featureStatusService.deleteFeatureStatusById(-1L));
     }
 }

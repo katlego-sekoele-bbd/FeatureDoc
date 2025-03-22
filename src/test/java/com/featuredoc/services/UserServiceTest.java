@@ -104,6 +104,9 @@ class UserServiceTest {
         User user = new User(1L, "name", "email");
 
         doNothing().when(userRepository).deleteById(user.getUserID());
+
+        userService.deleteUser(user.getUserID());
+        verify(userRepository, times(1)).deleteById(user.getUserID());
     }
 
     @Test
@@ -113,6 +116,7 @@ class UserServiceTest {
                         .deleteById(-1L);
 
         assertThrows(NoSuchElementException.class, () -> userService.deleteUser(-1L));
+        verify(userRepository, never()).deleteById(-1L);
     }
 
     @Test
@@ -135,120 +139,120 @@ class UserServiceTest {
         assertThrows(NoSuchElementException.class, () -> userService.getUserByEmail(""));
     }
 
-//    @Test
-//    public void getCurrentUserBestCase() {
-//        final boolean loggedIn = true;
-//        final String principle = "test@test.com";
-//        final String name = "test";
-//        User user = new User(1L, name, principle);
-//        SecurityContextHolder.setContext(new SecurityContext() {
-//            @Override
-//            public Authentication getAuthentication() {
-//                return new Authentication() {
-//                    @Override
-//                    public Collection<? extends GrantedAuthority> getAuthorities() {
-//                        return List.of();
-//                    }
-//
-//                    @Override
-//                    public Object getCredentials() {
-//                        return null;
-//                    }
-//
-//                    @Override
-//                    public Object getDetails() {
-//                        return null;
-//                    }
-//
-//                    @Override
-//                    public Object getPrincipal() {
-//                        return principle;
-//                    }
-//
-//                    @Override
-//                    public boolean isAuthenticated() {
-//                        return loggedIn;
-//                    }
-//
-//                    @Override
-//                    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-//
-//                    }
-//
-//                    @Override
-//                    public String getName() {
-//                        return name;
-//                    }
-//                };
-//            }
-//
-//            @Override
-//            public void setAuthentication(Authentication authentication) {
-//
-//            }
-//        });
-//
-//        when(userService.getUserByEmail(principle))
-//                .thenReturn(Optional.of(user));
-//
-//        User actual = userService.getCurrentUser();
-//
-//        assertEquals(user, actual);
-//    }
-//
-//    @Test
-//    public void getCurrentUserNotLoggedIn() {
-//        final boolean loggedIn = false;
-//        final String principle = null;
-//        final String name = null;
-//        User user = new User(1L, name, principle);
-//        SecurityContextHolder.setContext(new SecurityContext() {
-//            @Override
-//            public Authentication getAuthentication() {
-//                return new Authentication() {
-//                    @Override
-//                    public Collection<? extends GrantedAuthority> getAuthorities() {
-//                        return List.of();
-//                    }
-//
-//                    @Override
-//                    public Object getCredentials() {
-//                        return null;
-//                    }
-//
-//                    @Override
-//                    public Object getDetails() {
-//                        return null;
-//                    }
-//
-//                    @Override
-//                    public Object getPrincipal() {
-//                        return principle;
-//                    }
-//
-//                    @Override
-//                    public boolean isAuthenticated() {
-//                        return loggedIn;
-//                    }
-//
-//                    @Override
-//                    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-//
-//                    }
-//
-//                    @Override
-//                    public String getName() {
-//                        return name;
-//                    }
-//                };
-//            }
-//
-//            @Override
-//            public void setAuthentication(Authentication authentication) {
-//
-//            }
-//        });
-//
-//        assertThrows(AuthenticationException.class, () -> userService.getCurrentUser());
-//    }
+    @Test
+    public void getCurrentUserBestCase() {
+        final boolean loggedIn = true;
+        final String principle = "test@test.com";
+        final String name = "test";
+        User user = new User(1L, name, principle);
+        SecurityContextHolder.setContext(new SecurityContext() {
+            @Override
+            public Authentication getAuthentication() {
+                return new Authentication() {
+                    @Override
+                    public Collection<? extends GrantedAuthority> getAuthorities() {
+                        return List.of();
+                    }
+
+                    @Override
+                    public Object getCredentials() {
+                        return null;
+                    }
+
+                    @Override
+                    public Object getDetails() {
+                        return null;
+                    }
+
+                    @Override
+                    public Object getPrincipal() {
+                        return principle;
+                    }
+
+                    @Override
+                    public boolean isAuthenticated() {
+                        return loggedIn;
+                    }
+
+                    @Override
+                    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+
+                    }
+
+                    @Override
+                    public String getName() {
+                        return name;
+                    }
+                };
+            }
+
+            @Override
+            public void setAuthentication(Authentication authentication) {
+
+            }
+        });
+
+        when(userService.getUserByEmail(principle))
+                .thenReturn(Optional.of(user));
+
+        User actual = userService.getCurrentUser();
+
+        assertEquals(user, actual);
+    }
+
+    @Test
+    public void getCurrentUserNotLoggedIn() {
+        final boolean loggedIn = false;
+        final String principle = null;
+        final String name = null;
+        User user = new User(1L, name, principle);
+        SecurityContextHolder.setContext(new SecurityContext() {
+            @Override
+            public Authentication getAuthentication() {
+                return new Authentication() {
+                    @Override
+                    public Collection<? extends GrantedAuthority> getAuthorities() {
+                        return List.of();
+                    }
+
+                    @Override
+                    public Object getCredentials() {
+                        return null;
+                    }
+
+                    @Override
+                    public Object getDetails() {
+                        return null;
+                    }
+
+                    @Override
+                    public Object getPrincipal() {
+                        return principle;
+                    }
+
+                    @Override
+                    public boolean isAuthenticated() {
+                        return loggedIn;
+                    }
+
+                    @Override
+                    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+
+                    }
+
+                    @Override
+                    public String getName() {
+                        return name;
+                    }
+                };
+            }
+
+            @Override
+            public void setAuthentication(Authentication authentication) {
+
+            }
+        });
+
+        assertThrows(AuthenticationException.class, () -> userService.getCurrentUser());
+    }
 }

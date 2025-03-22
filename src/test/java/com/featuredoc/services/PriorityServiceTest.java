@@ -111,11 +111,17 @@ class PriorityServiceTest {
         Priority priority = new Priority(1, "1");
 
         doNothing().when(priorityRepository).deleteById(1L);
+        when(priorityRepository.existsById(1L))
+                .thenReturn(true);
+
+        priorityService.deletePriorityById(1L);
+        verify(priorityRepository, times(1)).deleteById(1L);
     }
 
     @Test
     public void deletePriorityByIDNotExists() {
         assertThrows(NoSuchElementException.class, () -> priorityService.deletePriorityById(-1));
+        verify(priorityRepository, never()).deleteById(-1L);
     }
 
 }

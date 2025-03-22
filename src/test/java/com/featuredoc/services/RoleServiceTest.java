@@ -107,11 +107,17 @@ class RoleServiceTest {
         Role role = new Role(1, "1");
 
         doNothing().when(roleRepository).deleteById(Long.valueOf(role.getRoleID()));
+
+        roleService.deleteRole(Long.valueOf(role.getRoleID()));
+        verify(roleRepository, times(1)).deleteById(Long.valueOf(role.getRoleID()));
     }
 
     @Test
     public void deleteRoleNotExist() {
+        doThrow(NoSuchElementException.class).when(roleRepository).deleteById(-1L);
+
         assertThrows(NoSuchElementException.class, () -> roleService.deleteRole(-1L));
+        verify(roleRepository, never()).deleteById(-1L);
     }
 
 }
