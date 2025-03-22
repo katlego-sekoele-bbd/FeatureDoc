@@ -48,6 +48,11 @@ jobs:
         # Save SSH key
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
+        echo "$DATABASE_URL"
+        echo "$DATABASE_USERNAME"
+        echo "$DATABASE_PASSWORD"
+        echo "$EMAIL_HOST"
+        echo "$GOOGLE_CLIENT_ID"
         # Copy JAR to EC2
         scp -v -o StrictHostKeyChecking=no -i private_key.pem target/*.jar ec2-user@ec2-13-244-100-161.af-south-1.compute.amazonaws.com:/home/ec2-user/server.jar
         # Connect and set up environment variables & run the server
