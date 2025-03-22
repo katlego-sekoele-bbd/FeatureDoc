@@ -34,9 +34,9 @@ class UserRoleServiceTest {
     @Test
     public void getRolesByUserIdBestCase() {
         List<UserRole> userRoles = List.of(
-                new UserRole(new UserRoleId(1,1)),
-                new UserRole(new UserRoleId(2,1)),
-                new UserRole(new UserRoleId(3,1))
+                new UserRole(new UserRoleId(1L,1L)),
+                new UserRole(new UserRoleId(2L,1L)),
+                new UserRole(new UserRoleId(3L,1L))
         );
 
         when(userRoleRepository.findUserRoles(Long.valueOf(userRoles.get(0).getId().getUserID())))
@@ -71,7 +71,7 @@ class UserRoleServiceTest {
 
     @Test
     public void addUserRoleBestCase() {
-        UserRoleId userRoleId = new UserRoleId(1,1);
+        UserRoleId userRoleId = new UserRoleId(1L,1L);
         UserRole userRole = new UserRole(userRoleId);
 
         when(userRoleRepository.save(userRole))
@@ -84,7 +84,7 @@ class UserRoleServiceTest {
 
     @Test
     public void addUserRoleNoUser() {
-        UserRoleId userRoleId = new UserRoleId(1,-1);
+        UserRoleId userRoleId = new UserRoleId(1L,-1L);
         UserRole userRole = new UserRole(userRoleId);
 
         when(userRepository.findById(Long.valueOf(userRoleId.getUserID())))
@@ -95,7 +95,7 @@ class UserRoleServiceTest {
 
     @Test
     public void addUserRoleNoRole() {
-        UserRoleId userRoleId = new UserRoleId(-1,1);
+        UserRoleId userRoleId = new UserRoleId(-1L,1L);
         UserRole userRole = new UserRole(userRoleId);
 
         when(roleRepository.findById(Long.valueOf(userRoleId.getRoleID())))

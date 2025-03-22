@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class FeatureView {
 
     @Id
