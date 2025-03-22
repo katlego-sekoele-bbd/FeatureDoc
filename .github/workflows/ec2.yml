@@ -32,6 +32,18 @@ jobs:
     - name: Deploy to EC2
       env:
         PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+        DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+
+        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_SCOPE: ${{ secrets.GOOGLE_SCOPE }}
       run: |
         # Save SSH key
         echo "$PRIVATE_KEY" > private_key.pem
@@ -43,6 +55,19 @@ jobs:
           
         # Stop any previously running server instance (if any)
           pkill -f "java -jar /home/ec2-user/server.jar" || true
+        
+          export DATABASE_URL="$DATABASE_URL"
+          export DATABASE_USERNAME="$DATABASE_USERNAME"
+          export DATABASE_PASSWORD="$DATABASE_PASSWORD"
+    
+          export EMAIL_HOST="$EMAIL_HOST"
+          export EMAIL_USERNAME="$EMAIL_USERNAME"
+          export EMAIL_PASSWORD="$EMAIL_PASSWORD"
+          export EMAIL_PORT="$EMAIL_PORT"
+    
+          export GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
+          export GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET"
+          export GOOGLE_SCOPE="$GOOGLE_SCOPE"
           
           # Run the JAR file in the background and log output to server.log
           nohup java -jar /home/ec2-user/server.jar > /home/ec2-user/server.log 2>&1 &
