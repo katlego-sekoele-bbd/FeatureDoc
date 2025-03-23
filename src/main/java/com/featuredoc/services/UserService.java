@@ -5,6 +5,7 @@ import com.featuredoc.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,12 +44,21 @@ public class UserService {
     }
 
     public User getCurrentUser() {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.getPrincipal() instanceof String) {
+        if (authentication.getPrincipal() instanceof Jwt jwt) {
 
-            return getUserByEmail(String.valueOf(authentication.getPrincipal())).get();
+            String email = jwt.getClaimAsString("email");
+
+            Optional<User> userOptional = getUserByEmail(email);
+            if (userOptional.isPresent()) {
+                return userOptional.get();
+            } else {
+                throw new IllegalStateException("User not found for email: " + email);
+            }
         }
-        throw new IllegalStateException("User not found");
+
+        throw new IllegalStateException("Invalid authentication principal");
     }
 }
