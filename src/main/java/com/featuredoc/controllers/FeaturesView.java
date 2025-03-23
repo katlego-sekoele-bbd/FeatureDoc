@@ -26,6 +26,11 @@ public class FeaturesView {
                 .orElse(new FeatureView());
     }
 
+    @GetMapping
+    public List<FeatureView> getAllLatestFeatureVersions() {
+        return featureViewService.getAllLatestFeatureViews();
+    }
+
     @GetMapping("/{featureID}/history")
     public ResponseEntity<List<FeatureView>> getAllFeatureVersions(
             @PathVariable("featureID") @Min(value = 1, message = "featureID must be a positive integer") Integer featureID) {

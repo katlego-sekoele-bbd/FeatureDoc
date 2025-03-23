@@ -17,4 +17,11 @@ public interface FeatureViewRepository extends JpaRepository<FeatureView, Intege
     @Query("SELECT f FROM FeatureView f WHERE f.featureID = :featureID ORDER BY f.featureVersionID ASC")
     List<FeatureView> findAllVersionsByFeatureId(@Param("featureID")  Integer featureID);
 
+    @Query(value = """
+        SELECT DISTINCT ON (fv."FeatureID") *
+        FROM "FeatureView" fv
+        ORDER BY fv."FeatureID", fv."UpdatedDate" DESC
+    """, nativeQuery = true)
+   List<FeatureView> findAllLatestFeatureViews();
+
 }

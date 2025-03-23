@@ -22,4 +22,8 @@ public class FeatureViewService {
         return featureViewRepository.findAllVersionsByFeatureId(featureID);
     }
 
+    public List<FeatureView> getAllLatestFeatureViews() {
+        return featureViewRepository.findAllLatestFeatureViews();
+    }
+
 }
