@@ -1,9 +1,11 @@
 package com.featuredoc.controllers;
 
 import com.featuredoc.models.FeatureStatus;
+import com.featuredoc.repository.FeatureRepository;
 import com.featuredoc.services.FeatureStatusService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,9 @@ public class FeatureStatuses {
 
     @Autowired
     FeatureStatusService featureStatusService;
+
+    @Autowired
+    FeatureRepository featureRepository;
 
     @GetMapping(value = {"/", ""})
     public List<FeatureStatus> getAllFeatureStatuses() {
@@ -36,13 +41,17 @@ public class FeatureStatuses {
     }
 
     @DeleteMapping("/{featureStatusID}")
-    public ResponseEntity<Object> deletePriorityById(
-            @PathVariable("featureStatusID")
-            @Min(value = 1, message = "featureStatusID must be a positive integer")
-            long featureStatusID
-    ) {
-        featureStatusService.deleteFeatureStatusById(featureStatusID);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deletePriorityById(
+            @PathVariable("featureStatusID") @Min(value = 1, message = "featureStatusID must be a positive integer") Integer featureStatusID) {
+        if (!featureRepository.existsById((featureStatusID))) {
+            throw new DataIntegrityViolationException(
+                    "featureStatusID " + featureStatusID + " does not exist in the database");
+        } else {
+            featureStatusService.deleteFeatureStatusById(featureStatusID);
+            return ResponseEntity.noContent().build();
+
+        }
+
     }
 
 }
