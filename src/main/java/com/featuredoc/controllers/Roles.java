@@ -44,7 +44,7 @@ public class Roles {
     }
 
     @DeleteMapping("/{roleID}")
-    public ResponseEntity<Void> deleteRoleByID(@PathVariable long roleID) {
+    public ResponseEntity<Void> deleteRoleByID(@PathVariable("roleID") long roleID) {
         if (!roleRepository.existsById(roleID)) {
             throw new DataIntegrityViolationException(("roleID" + roleID + " does not exist in the database"));
 
