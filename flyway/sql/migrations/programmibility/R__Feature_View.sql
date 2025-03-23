@@ -16,9 +16,9 @@ SELECT
     fv."DeletedDate"
 FROM 
     "Feature" f
-INNER JOIN "FeatureVersion" fv ON f."FeatureID" = fv."FeatureID"
-INNER JOIN "User" u1 ON f."CreatedBy" = u1."UserID" 
-INNER JOIN "User" u2 ON fv."UpdateBy" = u2."UserID"  
+LEFT JOIN "FeatureVersion" fv ON f."FeatureID" = fv."FeatureID"
+LEFT JOIN "User" u1 ON f."CreatedBy" = u1."UserID"
+LEFT JOIN "User" u2 ON fv."UpdateBy" = u2."UserID"
 LEFT JOIN "User" u3 ON fv."AssignedTo" = u3."UserID"
-INNER JOIN "FeatureStatus" fs ON fv."FeatureStatusID" = fs."FeatureStatusID"
-INNER JOIN "Priority" p ON fv."PriorityID" = p."PriorityID";
+LEFT JOIN "FeatureStatus" fs ON fv."FeatureStatusID" = fs."FeatureStatusID"
+LEFT JOIN "Priority" p ON fv."PriorityID" = p."PriorityID";
