@@ -5,17 +5,18 @@ import com.featuredoc.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -149,52 +150,19 @@ class UserServiceTest {
         final String principle = "test@test.com";
         final String name = "test";
         User user = new User(1L, name, principle);
-        SecurityContextHolder.setContext(new SecurityContext() {
-            @Override
-            public Authentication getAuthentication() {
-                return new Authentication() {
-                    @Override
-                    public Collection<? extends GrantedAuthority> getAuthorities() {
-                        return List.of();
-                    }
 
-                    @Override
-                    public Object getCredentials() {
-                        return null;
-                    }
-
-                    @Override
-                    public Object getDetails() {
-                        return null;
-                    }
-
-                    @Override
-                    public Object getPrincipal() {
-                        return principle;
-                    }
-
-                    @Override
-                    public boolean isAuthenticated() {
-                        return loggedIn;
-                    }
-
-                    @Override
-                    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-
-                    }
-
-                    @Override
-                    public String getName() {
-                        return name;
-                    }
-                };
-            }
-
-            @Override
-            public void setAuthentication(Authentication authentication) {
-
-            }
-        });
+        Authentication authentication = Mockito.mock(Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+        Mockito.when(authentication.getPrincipal())
+                .thenReturn(new Jwt(
+                        "test",
+                        Instant.now(),
+                        Instant.MAX,
+                        Map.of("header", "header"),
+                        Map.of("email", "test@test.com")
+                ));
+        SecurityContextHolder.setContext(securityContext);
 
         when(userService.getUserByEmail(principle))
                 .thenReturn(Optional.of(user));
@@ -210,52 +178,22 @@ class UserServiceTest {
         final String principle = null;
         final String name = null;
         User user = new User(1L, name, principle);
-        SecurityContextHolder.setContext(new SecurityContext() {
-            @Override
-            public Authentication getAuthentication() {
-                return new Authentication() {
-                    @Override
-                    public Collection<? extends GrantedAuthority> getAuthorities() {
-                        return List.of();
-                    }
 
-                    @Override
-                    public Object getCredentials() {
-                        return null;
-                    }
+        Authentication authentication = Mockito.mock(Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+        Mockito.when(authentication.getPrincipal())
+                .thenReturn(new Jwt(
+                        "test",
+                        Instant.now(),
+                        Instant.MAX,
+                        Map.of("header", "header"),
+                        Map.of("email", "")
+                ));
+        SecurityContextHolder.setContext(securityContext);
 
-                    @Override
-                    public Object getDetails() {
-                        return null;
-                    }
-
-                    @Override
-                    public Object getPrincipal() {
-                        return principle;
-                    }
-
-                    @Override
-                    public boolean isAuthenticated() {
-                        return loggedIn;
-                    }
-
-                    @Override
-                    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-
-                    }
-
-                    @Override
-                    public String getName() {
-                        return name;
-                    }
-                };
-            }
-
-            @Override
-            public void setAuthentication(Authentication authentication) {
-
-            }
-        });
+        when(userService.getUserByEmail(principle))
+                .thenReturn(Optional.empty());
 
         assertThrows(IllegalStateException.class, () -> userService.getCurrentUser());
     }
