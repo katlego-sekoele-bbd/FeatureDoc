@@ -49,7 +49,7 @@ class AuthControllerTest {
 
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_HTML));
+                .andExpect(content().contentType("text/html;charset=UTF-8"));
     }
 
     @Test
