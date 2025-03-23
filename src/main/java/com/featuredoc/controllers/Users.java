@@ -30,7 +30,7 @@ class Users {
         emailService.sendSimpleMessage("keith.hughes@bbd.co.za", "Test", "This is a test message");
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/users/{userID}")
     public User getUserById(@PathVariable("userID") Long userID) {
         return userService.getUserById(userID).orElse(new User());
     }
