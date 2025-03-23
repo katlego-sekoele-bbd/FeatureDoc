@@ -59,9 +59,8 @@ public class FeatureService {
                 featureVersionRepository.save(featureVersion);
                 List<String> recipients = emailNotificationService
                                 .getNotificationRecipients(featureVersion.getAssignedTo(), null);
-                User user = userService.getUserById(request.getAssignedTo()).get();
                 emailNotificationService.sendUpdateEmail(request, featureVersion, priority, featureStatus, recipients,
-                                user);
+                        request.getAssignedTo());
                 return feature;
         }
 
@@ -72,8 +71,7 @@ public class FeatureService {
                 FeatureStatus featureStatus = getFeatureStatus(request.getFeatureStatusID());
                 FeatureVersion newVersion = createNewFeatureVersion(request, latestFeatureVersion);
                 List<String> recipients = emailNotificationService.getNotificationRecipients(newVersion.getAssignedTo(),latestFeatureVersion.getAssignedTo());
-                User user = userService.getUserById(request.getAssignedTo()).get();
-                emailNotificationService.sendUpdateEmail(request, newVersion, priority, featureStatus, recipients, user);
+                emailNotificationService.sendUpdateEmail(request, newVersion, priority, featureStatus, recipients, request.getAssignedTo());
                 return featureVersionRepository.save(newVersion);
         }
 

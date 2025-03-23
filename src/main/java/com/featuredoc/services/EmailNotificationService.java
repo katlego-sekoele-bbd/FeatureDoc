@@ -28,8 +28,7 @@ public class EmailNotificationService {
             addUserEmailToRecipients(previouslyAssignedUserID, recipients);
         }
         // Case 2: AssignedTo was changed from one user to another (notify both)
-        else if (newAssignedUserID != null && previouslyAssignedUserID != null
-                && !newAssignedUserID.equals(previouslyAssignedUserID)) {
+        else if (newAssignedUserID != null && previouslyAssignedUserID != null) {
             addUserEmailToRecipients(previouslyAssignedUserID, recipients);
             addUserEmailToRecipients(newAssignedUserID, recipients);
         }
@@ -46,10 +45,12 @@ public class EmailNotificationService {
         user.ifPresent(u -> recipients.add(u.getEmail()));
     }
 
-    public void sendUpdateEmail(FeatureRequest request, FeatureVersion newVersion, Priority priority, FeatureStatus featureStatus, List<String> recipients, User assignedUser) {
+    public void sendUpdateEmail(FeatureRequest request, FeatureVersion newVersion, Priority priority, FeatureStatus featureStatus, List<String> recipients, Long assignedUser) {
+        System.out.println("Email function executed");
         if (recipients.isEmpty()) {
             return; // No recipients to notify
         }
+        System.out.println("recipients confirmed");
 
 
         StringBuilder emailContent = new StringBuilder();
@@ -65,9 +66,10 @@ public class EmailNotificationService {
             String priorityDescription = priority != null ? priority.getDescription() : "N/A";
             emailContent.append("Priority: ").append(priorityDescription).append("\n");
         }
-        if (request.getAssignedTo() != null) {
-            emailContent.append("Assigned To: ").append(assignedUser.getName()).append("\n");
+        if (assignedUser != null) {
+            emailContent.append("Assigned To: ").append(userService.getUserById(assignedUser).get().getName()).append("\n");
         }
+
         if (request.getName() != null) {
             emailContent.append("Name: ").append(newVersion.getName()).append("\n");
         }
