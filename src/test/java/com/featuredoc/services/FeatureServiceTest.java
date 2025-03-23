@@ -160,7 +160,7 @@ class FeatureServiceTest {
         verify(featureVersionRepository, times(1)).save(any(FeatureVersion.class));
         verify(emailNotificationService, times(1)).getNotificationRecipients(2L, null);
         verify(emailNotificationService, times(1)).sendUpdateEmail(eq(request), any(FeatureVersion.class),
-                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
     }
 
     @Test

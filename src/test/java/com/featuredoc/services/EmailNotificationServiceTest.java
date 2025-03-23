@@ -108,7 +108,7 @@ class EmailNotificationServiceTest {
 
         doNothing().when(emailService).sendSimpleMessage(anyList(), anyString(), anyString());
 
-        emailNotificationService.sendUpdateEmail(featureRequest, featureVersion, priority, featureStatus, recipients, user);
+        emailNotificationService.sendUpdateEmail(featureRequest, featureVersion, priority, featureStatus, recipients, user.getUserID());
 
         verify(emailService, times(1)).sendSimpleMessage(anyList(), anyString(), anyString());
     }
@@ -122,7 +122,7 @@ class EmailNotificationServiceTest {
         List<String> recipients = List.of();
         User user = new User(1L, "name", "email1");
 
-        emailNotificationService.sendUpdateEmail(featureRequest, featureVersion, priority, featureStatus, recipients, user);
+        emailNotificationService.sendUpdateEmail(featureRequest, featureVersion, priority, featureStatus, recipients, user.getUserID());
 
         verify(emailService, never()).sendSimpleMessage(anyList(), anyString(), anyString());
     }
