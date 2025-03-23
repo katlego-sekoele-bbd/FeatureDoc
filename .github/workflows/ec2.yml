@@ -22,7 +22,7 @@ jobs:
 
     - name: Build Server Maven Project
       run: |
-        mvn clean package -DskipTests
+        mvn clean package -Dmaven.test.skip=true -Dmaven.site.skip=true -Dmaven.javadoc.skip=true
     - name: Upload JAR Artifact
       uses: actions/upload-artifact@v4
       with:
