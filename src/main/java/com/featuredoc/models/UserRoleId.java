@@ -1,6 +1,8 @@
 package com.featuredoc.models;
 
 import java.io.Serializable;
+import java.util.Objects;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,5 +25,16 @@ public class UserRoleId implements Serializable {
         return roleID;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        UserRoleId that = (UserRoleId) o;
+        return Objects.equals(getRoleID(), that.getRoleID()) && Objects.equals(getUserID(), that.getUserID());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getRoleID(), getUserID());
+    }
 }
 

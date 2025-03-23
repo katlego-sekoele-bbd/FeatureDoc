@@ -25,11 +25,15 @@ public class EmailService {
     }
 
     public void sendSimpleMessage(List<String> to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("featuredoc@stocktally.co.za");
-        message.setTo(to.toArray(new String[0]));
-        message.setSubject(subject);
-        message.setText(text);
-        emailSender.send(message);
+        if (!to.isEmpty() && !(subject.isEmpty() && text.isEmpty())) {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("featuredoc@stocktally.co.za");
+            message.setTo(to.toArray(new String[0]));
+            message.setSubject(subject);
+            message.setText(text);
+            emailSender.send(message);
+        } else {
+            // There is no list of recipients to send the email to, no need to do all the work.
+        }
     }
 }

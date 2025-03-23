@@ -31,11 +31,7 @@ public class PriorityService {
     }
 
     public void deletePriorityById(long priorityID) {
-        if (priorityRepository.existsById(priorityID)) {
-            priorityRepository.deleteById(priorityID);
-        } else {
-            throw new ResourceNotFoundException("Priority", "priorityID", priorityID);
-        }
+        priorityRepository.deleteById(priorityID);
     }
 
 }

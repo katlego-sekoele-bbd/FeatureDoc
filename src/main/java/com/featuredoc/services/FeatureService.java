@@ -77,13 +77,13 @@ public class FeatureService {
                 return featureVersionRepository.save(newVersion);
         }
 
-        private FeatureVersion getLatestFeatureVersion(Long featureID) throws BadRequestException {
+        FeatureVersion getLatestFeatureVersion(Long featureID) throws BadRequestException {
                 return featureVersionService.getLatestFeatureVersionByFeatureId(featureID)
                                 .orElseThrow(() -> new IllegalArgumentException(
                                                 "No previous version found for Feature ID: " + featureID));
         }
 
-        private Priority getFeaturePriority(Integer priorityID) {
+        Priority getFeaturePriority(Integer priorityID) {
                 if (priorityID == null) {
                         return null;
                 } else {
@@ -93,7 +93,7 @@ public class FeatureService {
                 }
         }
 
-        private User validateAssignedTo(Long userID) {
+        User validateAssignedTo(Long userID) {
 
                 if (userID == null) {
                         return null;
@@ -105,7 +105,7 @@ public class FeatureService {
                 }
         }
 
-        private FeatureStatus getFeatureStatus(Integer featureStatusID) {
+        FeatureStatus getFeatureStatus(Integer featureStatusID) {
                 if (featureStatusID == null)
                         return null;
                 return featureStatusService.getFeatureStatusById(featureStatusID)
@@ -113,7 +113,7 @@ public class FeatureService {
                                                 "FeatureStatus not found for ID: " + featureStatusID));
         }
 
-        private FeatureVersion createNewFeatureVersion(FeatureRequest request, FeatureVersion latestFeatureVersion) {
+        FeatureVersion createNewFeatureVersion(FeatureRequest request, FeatureVersion latestFeatureVersion) {
                 User currentlyLoggedInUser = userService.getCurrentUser();
                 FeatureVersion newVersion = new FeatureVersion(
                                 currentlyLoggedInUser.getUserID(),
