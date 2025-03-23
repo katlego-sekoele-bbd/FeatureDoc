@@ -22,7 +22,7 @@ public class UserRoles {
 
     @GetMapping("/user/{userID}")
     public ResponseEntity<List<UserRole>> getRolesByUserId(
-            @PathVariable 
+            @PathVariable("userID")
             @Min(value = 1, message = "userID must be a positive integer") Long userID) {
         List<UserRole> userRoles = userRoleService.getRolesByUserId(userID);
         return ResponseEntity.ok(userRoles);
