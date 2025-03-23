@@ -1,9 +1,12 @@
 package com.featuredoc.controllers;
 
 import com.featuredoc.models.Role;
+import com.featuredoc.repository.RoleRepository;
 import com.featuredoc.services.RoleService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,9 @@ public class Roles {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @GetMapping(value = {"", "/"})
     public List<Role> getAllRoles() {
@@ -38,8 +44,15 @@ public class Roles {
     }
 
     @DeleteMapping("/{roleID}")
-    public void deleteRoleByID(@PathVariable long roleID) {
-        roleService.deleteRole(roleID);
+    public ResponseEntity<Void> deleteRoleByID(@PathVariable long roleID) {
+        if (!roleRepository.existsById(roleID)) {
+            throw new DataIntegrityViolationException(("roleID" + roleID + " does not exist in the database"));
+
+        } else {
+            roleService.deleteRole(roleID);
+            return ResponseEntity.noContent().build();
+        }
+
     }
 
 }

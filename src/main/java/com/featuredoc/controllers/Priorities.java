@@ -1,9 +1,11 @@
 package com.featuredoc.controllers;
 
 import com.featuredoc.models.Priority;
+import com.featuredoc.repository.PriorityRepository;
 import com.featuredoc.services.PriorityService;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,6 +20,9 @@ public class Priorities {
 
     @Autowired
     PriorityService priorityService;
+
+    @Autowired
+    PriorityRepository priorityRepository;
 
     @GetMapping(value = {"/", ""})
     public List<Priority> getAllPriorities() {
@@ -40,18 +45,14 @@ public class Priorities {
     }
 
     @DeleteMapping("/{priorityID}")
-    public ResponseEntity<Object> deletePriorityById(
-            @PathVariable("priorityID")
-            @Min(value = 1, message = "priorityID must be a positive integer")
-            long priorityID
-    ) {
-        try {
+    public ResponseEntity<Void> deletePriorityById(
+            @PathVariable("priorityID") @Min(value = 1, message = "priorityID must be a positive integer") long priorityID) {
+        if (!priorityRepository.existsById(priorityID)) {
+            throw new DataIntegrityViolationException(("priorityID " + priorityID + " does not exist in the database"));
+        } else {
             priorityService.deletePriorityById(priorityID);
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Delete Failed");
         }
-
     }
 
 }
