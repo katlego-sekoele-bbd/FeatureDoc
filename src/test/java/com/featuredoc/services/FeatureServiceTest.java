@@ -207,7 +207,7 @@ class FeatureServiceTest {
         verify(featureVersionRepository, times(0)).save(any(FeatureVersion.class));
         verify(emailNotificationService, times(0)).getNotificationRecipients(2L, null);
         verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), any(FeatureVersion.class),
-                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
     }
 
     @Test
@@ -255,7 +255,7 @@ class FeatureServiceTest {
         verify(featureVersionRepository, times(0)).save(any(FeatureVersion.class));
         verify(emailNotificationService, times(0)).getNotificationRecipients(2L, null);
         verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), any(FeatureVersion.class),
-                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
     }
 
     @Test
@@ -303,7 +303,7 @@ class FeatureServiceTest {
         verify(featureVersionRepository, times(0)).save(any(FeatureVersion.class));
         verify(emailNotificationService, times(0)).getNotificationRecipients(2L, null);
         verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), any(FeatureVersion.class),
-                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
     }
 
     @Test
@@ -351,7 +351,7 @@ class FeatureServiceTest {
         verify(featureVersionRepository, times(0)).save(any(FeatureVersion.class));
         verify(emailNotificationService, times(0)).getNotificationRecipients(2L, null);
         verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), any(FeatureVersion.class),
-                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+                eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
     }
 
     @Test
@@ -419,7 +419,7 @@ class FeatureServiceTest {
         verify(featureService, times(1)).getFeatureStatus(2);
         verify(featureService, times(1)).createNewFeatureVersion(request, latestFeatureVersion);
         verify(emailNotificationService, times(1)).getNotificationRecipients(4L, 3L);
-        verify(emailNotificationService, times(1)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+        verify(emailNotificationService, times(1)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
         verify(featureVersionRepository, times(1)).save(newFeatureVersion);
     }
 
@@ -481,7 +481,7 @@ class FeatureServiceTest {
 
         // Verify interactions
         verify(featureService, times(0)).createNewFeatureVersion(request, latestFeatureVersion);
-        verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+        verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
         verify(featureVersionRepository, times(0)).save(newFeatureVersion);
     }
 
@@ -543,7 +543,7 @@ class FeatureServiceTest {
 
         // Verify interactions
         verify(featureService, times(0)).createNewFeatureVersion(request, latestFeatureVersion);
-        verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+        verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
         verify(featureVersionRepository, times(0)).save(newFeatureVersion);
     }
 
@@ -605,7 +605,7 @@ class FeatureServiceTest {
 
         // Verify interactions
         verify(featureService, times(0)).createNewFeatureVersion(request, latestFeatureVersion);
-        verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser));
+        verify(emailNotificationService, times(0)).sendUpdateEmail(eq(request), eq(newFeatureVersion), eq(mockPriority), eq(mockStatus), eq(recipients), eq(assignedUser.getUserID()));
         verify(featureVersionRepository, times(0)).save(newFeatureVersion);
     }
 
