@@ -10,6 +10,7 @@ import java.util.Objects;
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Feature {
 
     @Id
